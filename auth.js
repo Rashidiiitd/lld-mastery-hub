@@ -25,6 +25,7 @@
     submit.disabled = value;
     switchButton.disabled = value;
     $("forgot-password").disabled = value;
+    $("resend-confirmation").disabled = value;
     submitText.textContent = value ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account";
   }
   function setMode(next) {
@@ -38,6 +39,7 @@
     switchText.textContent = mode === "signin" ? "New here?" : "Already have an account?";
     switchButton.textContent = mode === "signin" ? "Create an account" : "Sign in instead";
     $("forgot-password").hidden = mode !== "signin";
+    $("resend-confirmation").hidden = true;
     $("auth-name").hidden = mode === "signin";
     $("auth-name-label").hidden = mode === "signin";
     $("auth-name").required = mode !== "signin";
@@ -90,10 +92,38 @@
       }
     } catch (error) {
       say(error.message || "Something went wrong. Please try again.", "error");
+      if (mode === "signin" && /email not confirmed|not confirmed/i.test(error.message || "")) {
+        $("resend-confirmation").hidden = false;
+      }
     } finally {
       setBusy(false);
     }
   });
+  $("resend-confirmation").addEventListener("click", async () => {
+    const email = $("auth-email").value.trim();
+    if (!email) {
+      say("Enter your email address first, then resend the confirmation.", "error");
+      $("auth-email").focus();
+      return;
+    }
+    setBusy(true);
+    say("Sending a new confirmation email…");
+    try {
+      const { error } = await client.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: new URL("lld.html#notes", window.location.href).href }
+      });
+      if (error) throw error;
+      say("If this account needs confirmation, a new email has been sent. Check your inbox and spam folder.", "success");
+      $("resend-confirmation").hidden = true;
+    } catch (error) {
+      say(error.message || "Could not resend the confirmation email.", "error");
+    } finally {
+      setBusy(false);
+    }
+  });
+
   $("forgot-password").addEventListener("click", async () => {
     const email = $("auth-email").value.trim();
     if (!email) {
