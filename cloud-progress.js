@@ -51,7 +51,7 @@
     userId = user?.id || null;
     hydrated = false;
     clearTimeout(timer);
-    if (!userId) { say("Sign in above to sync across devices."); return; }
+    if (!userId) { say("Sign in to sync progress across devices."); return; }
     say("Loading your cloud progress…");
     try {
       const {data,error} = await client.from(TABLE).select("state").eq("user_id",userId).maybeSingle();
