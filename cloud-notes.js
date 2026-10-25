@@ -105,7 +105,7 @@
     const email = $("#cloud-email").value.trim(), password = $("#cloud-password").value;
     if (!email || password.length < 6) { feedback("Enter a valid email and a password of at least 6 characters."); return; }
     feedback("Creating your account…");
-    const { data, error } = await client.auth.signUp({ email, password });
+    const { data, error } = await client.auth.signUp({ email, password, options: { emailRedirectTo: window.location.href } });
     if (error) { feedback(error.message); return; }
     if (data.session) {
       setAuthUi(data.user); feedback("Account created and signed in."); await loadNotes();
