@@ -8,7 +8,7 @@
   let currentUser = null;
   let notesCache = [];
   let activeCollection = "All";
-  const collectionOf = topic => /^(LLD|C\\+\\+|System Design|DSA) — /.exec(topic || "")?.[1] || "LLD";
+  const collectionOf = topic => /^(LLD|C\+\+|System Design|DSA) — /.exec(topic || "")?.[1] || "LLD";
   const feedback = (message) => {
     const status = $("#cloud-account-status");
     if (status) status.textContent = message || "";
