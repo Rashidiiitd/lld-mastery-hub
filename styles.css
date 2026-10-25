@@ -75,9 +75,9 @@
 
 .subject-hero{padding-top:70px;padding-bottom:30px;max-width:1000px}
 .subject-hero h1{margin-bottom:18px}
-.subject-notice{display:flex;align-items:flex-start;gap:18px;padding:22px;margin-top:32px}
-.subject-notice h2{font-size:17px;margin:0 0 6px}
-.subject-notice p{font-size:12px;margin:0}
+
+
+
 .subject-content{padding-top:25px}
 .topic-grid{margin-bottom:25px}
 .topic-card{cursor:default}
@@ -85,7 +85,7 @@
 .topic-card h3{margin-top:17px}
 .topnav{gap:22px}
 @media(max-width:900px){.topnav{gap:13px}.hub-card{min-height:230px}}
-@media(max-width:680px){.topbar{padding:0 12px}.topnav{gap:10px;font-size:10px;overflow-x:auto;white-space:nowrap;max-width:55vw}.brand{gap:7px;font-size:12px}.brand-mark{width:30px;height:30px}.hub-grid{grid-template-columns:1fr}.hub-card{min-height:210px;padding:20px}.hub-status{right:18px;top:22px}.subject-hero{padding-top:50px}.subject-notice{padding:17px}}
+@media(max-width:680px){.topbar:not(.auth-topbar){height:auto;min-height:65px;flex-wrap:wrap;gap:10px;padding:10px 12px}.topbar:not(.auth-topbar) .topnav{order:3;flex:1 0 100%;width:100%;max-width:100%}.topbar:not(.auth-topbar) .auth-nav-link{margin-left:auto}.topbar{padding:0 12px}.topnav{gap:10px;font-size:10px;overflow-x:auto;white-space:nowrap;max-width:55vw}.brand{gap:7px;font-size:12px}.brand-mark{width:30px;height:30px}.hub-grid{grid-template-columns:1fr}.hub-card{min-height:210px;padding:20px}.hub-status{right:18px;top:22px}.subject-hero{padding-top:50px}}
 
 
 /* C++ interview question bank */
