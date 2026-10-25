@@ -115,18 +115,21 @@
     event.preventDefault();
     const title = $("#note-title").value.trim();
     const selectedTopic = $("#note-topic").value;
-    const files = Array.from($("#note-image").files || []);
+    const individualFiles = Array.from($("#note-image").files || []);
+    const folderFiles = Array.from($("#note-folder").files || []);
+    const isPng = file => file.type === "image/png" || file.name.toLowerCase().endsWith(".png");
+    const invalidIndividual = individualFiles.find(file => !isPng(file));
+    const files = [...individualFiles.filter(isPng), ...folderFiles.filter(isPng)];
     const customName = $("#custom-topic").value.trim();
     const topic = selectedTopic === "__custom__"
       ? ($("#note-topic").selectedOptions[0]?.dataset.collection || "LLD") + " — " + customName
       : selectedTopic;
     if (!currentUser) { noteFeedback("Please sign in first."); return; }
-    if (!title || !files.length) { noteFeedback("Add a title and choose one or more PNG images first."); return; }
+    if (!title || !files.length) { noteFeedback("Add a title and choose PNG files or select a folder containing PNG pages."); return; }
+    if (invalidIndividual) { noteFeedback('"' + invalidIndividual.name + '" is not a PNG file. Please select PNG images only.'); return; }
     if (selectedTopic === "__custom__" && !customName) {
       noteFeedback("Enter a name for your custom topic."); $("#custom-topic").focus(); return;
     }
-    const invalidFile = files.find(file => file.type !== "image/png" && !file.name.toLowerCase().endsWith(".png"));
-    if (invalidFile) { noteFeedback('"' + invalidFile.name + '" is not a PNG file. Please select PNG images only.'); return; }
     const oversizedFile = files.find(file => file.size > 20 * 1024 * 1024);
     if (oversizedFile) { noteFeedback('"' + oversizedFile.name + '" is larger than 20 MB. Choose a smaller image.'); return; }
 
@@ -143,7 +146,8 @@
         const { error: uploadError } = await client.storage.from(BUCKET).upload(path, file, { contentType: "image/png", upsert: false });
         if (uploadError) throw new Error('Upload failed for "' + file.name + '": ' + uploadError.message);
         uploadedPaths.push(path);
-        const baseName = file.name.replace(/\.png$/i, "").replace(/[_-]+/g, " ").trim();
+        const relativeName = file.webkitRelativePath || file.name;
+        const baseName = relativeName.replace(/\.png$/i, "").replace(/[/\\]+/g, " — ").replace(/[_-]+/g, " ").trim();
         const noteTitle = files.length === 1 ? title : title + " — " + (baseName || ("Page " + (i + 1)));
         const { error } = await client.from("handwritten_notes").insert({
           user_id: currentUser.id, title: noteTitle, topic, storage_path: path
