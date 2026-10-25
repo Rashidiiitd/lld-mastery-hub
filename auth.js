@@ -17,6 +17,8 @@
   function say(message, kind = "") {
     feedback.textContent = message;
     feedback.className = "auth-feedback" + (kind ? " " + kind : "");
+    const recoveryFeedback = $("recovery-feedback");
+    if (recoveryFeedback) { recoveryFeedback.textContent = message; recoveryFeedback.className = "auth-feedback" + (kind ? " " + kind : ""); }
   }
   function setBusy(value) {
     busy = value;
