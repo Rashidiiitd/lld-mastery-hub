@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Sign in to Engineering Mastery Hub to sync your learning progress and private handwritten notes.">
+  <title>Sign in — Engineering Mastery Hub</title>
+  <link rel="stylesheet" href="styles.css?v=9">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="theme.js?v=1" defer></script>
+  <script src="auth.js?v=1" defer></script>
+</head>
+<body class="auth-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar auth-topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a>
+    <nav class="topnav" aria-label="Main navigation"><a href="index.html">Home</a><a href="lld.html">LLD</a><a href="cpp-interview.html">C++ Interviews</a><a href="resources.html">Resources</a></nav>
+    <button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme" title="Toggle color theme">☼</button>
+  </header>
+  <main id="main" class="auth-main">
+    <section class="auth-shell" aria-labelledby="auth-title">
+      <div class="auth-story">
+        <a class="auth-back-link" href="index.html">← Back to learning hub</a>
+        <p class="eyebrow">YOUR ENGINEERING WORKSPACE</p>
+        <h1>Make progress.<br><span class="gradient-text">Keep momentum.</span></h1>
+        <p class="auth-story-copy">One account keeps your learning progress and private handwritten notes available across your devices.</p>
+        <div class="auth-benefits">
+          <div><span class="auth-benefit-icon">✓</span><span><strong>Progress that stays with you</strong><small>Keep your roadmap and study streak in sync.</small></span></div>
+          <div><span class="auth-benefit-icon">▤</span><span><strong>Your notes, in one place</strong><small>Save and revisit handwritten PNG pages.</small></span></div>
+          <div><span class="auth-benefit-icon">⌘</span><span><strong>Built for deliberate practice</strong><small>LLD, C++, system design, and DSA.</small></span></div>
+        </div>
+        <p class="auth-privacy-note"><span>●</span> Your notes are private to your account, subject to the configured database and storage access policies.</p>
+      </div>
+      <div class="auth-card panel">
+        <div class="auth-card-brand"><span class="brand-mark">L</span><span>Engineering Mastery Hub</span></div>
+        <div id="auth-form-wrap">
+          <p id="auth-eyebrow" class="eyebrow">WELCOME BACK</p>
+          <h2 id="auth-title">Sign in to your workspace.</h2>
+          <p id="auth-description" class="muted">Pick up where you left off. Your notes and learning progress stay connected to your account.</p>
+          <form id="auth-form" class="auth-form">
+            <label for="auth-email">Email address</label>
+            <input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required>
+            <label for="auth-password">Password</label>
+            <div class="auth-password-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="6" placeholder="Enter your password" required><button id="toggle-password" class="auth-show-password" type="button" aria-label="Show password">Show</button></div>
+            <label id="auth-name-label" for="auth-name" hidden>Your name</label>
+            <input id="auth-name" type="text" autocomplete="name" placeholder="How should we call you?" hidden>
+            <button id="forgot-password" class="auth-forgot" type="button">Forgot password?</button>
+            <button id="auth-submit" class="button primary full auth-submit" type="submit"><span id="auth-submit-text">Sign in</span><span aria-hidden="true">→</span></button>
+            <p id="auth-feedback" class="auth-feedback" role="status" aria-live="polite"></p>
+          </form>
+          <div class="auth-switch-row"><span id="auth-switch-text">New here?</span><button id="auth-switch" class="auth-switch" type="button">Create an account</button></div>
+        </div>
+        <div id="signed-in-state" hidden>
+          <p class="eyebrow">YOU'RE SIGNED IN</p><h2>Welcome back.</h2><p class="muted">Signed in as <strong id="auth-user-email"></strong>.</p>
+          <a class="button primary full" href="lld.html#notes">Open your workspace →</a>
+          <button id="auth-signout" class="button secondary full" type="button">Sign out</button>
+        </div>
+        <div id="recovery-wrap" hidden>
+          <p class="eyebrow">ACCOUNT SECURITY</p><h2>Choose a new password.</h2><p class="muted">Use at least 8 characters for your new password.</p>
+          <form id="recovery-form" class="auth-form"><label for="new-password">New password</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"><button class="button primary full" type="submit">Update password →</button></form>
+        </div>
+        <p class="auth-terms">By continuing, you agree to use this learning workspace responsibly. <a href="index.html">Return home</a>.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="footer auth-footer"><a class="brand" href="index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><p>Build understanding, not memorized definitions.</p></footer>
+</body>
+</html>
