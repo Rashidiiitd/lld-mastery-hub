@@ -81,7 +81,7 @@
           email, password: pass,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: new URL("lld.html#notes", window.location.href).href
+            emailRedirectTo: new URL("resources.html#notes", window.location.href).href
           }
         });
         if (error) throw error;
@@ -114,7 +114,7 @@
       const { error } = await client.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: new URL("lld.html#notes", window.location.href).href }
+        options: { emailRedirectTo: new URL("resources.html#notes", window.location.href).href }
       });
       if (error) throw error;
       say("If this account needs confirmation, a new email has been sent. Check your inbox and spam folder.", "success");
