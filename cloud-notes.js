@@ -108,7 +108,7 @@
         throw error;
       }
       $("#note-upload-form").reset();
-      noteFeedback("Saved to the cloud! Sign in with this account on another device to access it.");
+      noteFeedback("Saved to your cloud library.");
       await loadNotes();
     } catch (error) { noteFeedback("Upload failed: " + error.message); }
     finally { submit.disabled = !currentUser; }
