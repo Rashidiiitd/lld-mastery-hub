@@ -94,6 +94,15 @@
     }
   }
   $("#notes-search").addEventListener("input", renderNotes);
+  const topicSelect = $("#note-topic");
+  const customTopicWrap = $("#custom-topic-wrap");
+  const customTopicInput = $("#custom-topic");
+  topicSelect.addEventListener("change", () => {
+    const custom = topicSelect.value === "__custom__";
+    customTopicWrap.hidden = !custom;
+    customTopicInput.required = custom;
+    if (!custom) customTopicInput.value = "";
+  });
   document.querySelectorAll("[data-note-filter]").forEach(button => button.addEventListener("click", event => {
     event.preventDefault();
     activeCollection = button.dataset.noteFilter;
@@ -104,9 +113,14 @@
   }));
   $("#note-upload-form").addEventListener("submit", async event => {
     event.preventDefault();
-    const title = $("#note-title").value.trim(), topic = $("#note-topic").value, file = $("#note-image").files[0];
+    const title = $("#note-title").value.trim(), selectedTopic = $("#note-topic").value, file = $("#note-image").files[0];
+    const customName = $("#custom-topic").value.trim();
+    const topic = selectedTopic === "__custom__"
+      ? ($("#note-topic").selectedOptions[0]?.dataset.collection || "LLD") + " — " + customName
+      : selectedTopic;
     if (!currentUser) { noteFeedback("Please sign in first."); return; }
     if (!title || !file) { noteFeedback("Add a title and choose a PNG image first."); return; }
+    if (selectedTopic === "__custom__" && !customName) { noteFeedback("Enter a name for your custom topic."); $("#custom-topic").focus(); return; }
     if (file.type !== "image/png" && !file.name.toLowerCase().endsWith(".png")) { noteFeedback("Please choose a PNG file."); return; }
     if (file.size > 20 * 1024 * 1024) { noteFeedback("This PNG is larger than 20 MB. Choose a smaller image."); return; }
     const submit = $("#note-upload-form button[type=submit]");
@@ -122,6 +136,7 @@
         throw error;
       }
       $("#note-upload-form").reset();
+      customTopicWrap.hidden = true; customTopicInput.required = false;
       noteFeedback("Saved to your cloud library.");
       await loadNotes();
     } catch (error) { noteFeedback("Upload failed: " + error.message); }
