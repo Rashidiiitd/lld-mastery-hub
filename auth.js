@@ -46,8 +46,13 @@
     password.autocomplete = mode === "signin" ? "current-password" : "new-password";
     say("");
   }
-  function goToWorkspace() {
-    window.location.assign(new URL("lld.html#notes", window.location.href).href);
+  function showSignedInState(email, headline = "You're all set!") {
+    $("auth-form-wrap").hidden = true;
+    $("recovery-wrap").hidden = true;
+    $("signed-in-state").hidden = false;
+    $("auth-user-email").textContent = email || "Your account";
+    $("auth-signout").hidden = false;
+    $("auth-success-title").textContent = headline;
   }
   switchButton.addEventListener("click", () => {
     if (!busy) setMode(mode === "signin" ? "signup" : "signin");
@@ -69,8 +74,7 @@
         say("Signing you in…");
         const { error } = await client.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
-        say("Signed in. Opening your workspace…", "success");
-        goToWorkspace();
+        showSignedInState((await client.auth.getUser()).data.user?.email || email, "Welcome back! 🎉");
       } else {
         const fullName = $("auth-name").value.trim();
         say("Creating your account…");
@@ -83,8 +87,7 @@
         });
         if (error) throw error;
         if (data.session) {
-          say("Account created. Opening your workspace…", "success");
-          goToWorkspace();
+          showSignedInState(data.user?.email || email, "Account created! 🎉");
         } else {
           setMode("signin");
           say("Account created. Check your email for the confirmation link, then sign in here.", "success");
@@ -149,10 +152,7 @@
     const { data, error } = await client.auth.getSession();
     if (error) { say(error.message, "error"); return; }
     if (data.session && new URLSearchParams(window.location.search).get("recovery") !== "1") {
-      $("signed-in-state").hidden = false;
-      $("auth-form-wrap").hidden = true;
-      $("auth-user-email").textContent = data.session.user.email || "Your account";
-      $("auth-signout").hidden = false;
+      showSignedInState(data.session.user.email, "Welcome back! 🎉");
     }
     if (new URLSearchParams(window.location.search).get("recovery") === "1") {
       $("recovery-wrap").hidden = false;
