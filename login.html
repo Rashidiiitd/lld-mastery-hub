@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#101827">
   <meta name="description" content="Sign in to Engineering Mastery Hub to sync your learning progress and private handwritten notes.">
   <title>Sign in — Engineering Mastery Hub</title>
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="theme.js?v=1" defer></script>
-  <script src="auth.js?v=1" defer></script>
+  <script src="auth.js?v=2" defer></script>
 </head>
 <body class="auth-page">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -52,9 +52,11 @@
           </form>
           <div class="auth-switch-row"><span id="auth-switch-text">New here?</span><button id="auth-switch" class="auth-switch" type="button">Create an account</button></div>
         </div>
-        <div id="signed-in-state" hidden>
-          <p class="eyebrow">YOU'RE SIGNED IN</p><h2>Welcome back.</h2><p class="muted">Signed in as <strong id="auth-user-email"></strong>.</p>
-          <a class="button primary full" href="lld.html#notes">Open your workspace →</a>
+        <div id="signed-in-state" class="auth-success-state" hidden>
+          <div class="auth-success-mark" aria-hidden="true">✓</div>
+          <p class="eyebrow">SIGN IN SUCCESSFUL</p><h2 id="auth-success-title">Welcome back! 🎉</h2>
+          <p class="muted">You're signed in as <strong id="auth-user-email"></strong>. Your learning journey is ready to continue.</p>
+          <a class="button primary full" href="lld.html#notes">Let's keep learning →</a>
           <button id="auth-signout" class="button secondary full" type="button">Sign out</button>
         </div>
         <div id="recovery-wrap" hidden>
