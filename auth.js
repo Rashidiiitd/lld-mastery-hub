@@ -37,6 +37,7 @@
     switchButton.textContent = mode === "signin" ? "Create an account" : "Sign in instead";
     $("forgot-password").hidden = mode !== "signin";
     $("auth-name").hidden = mode === "signin";
+    $("auth-name-label").hidden = mode === "signin";
     $("auth-name").required = mode !== "signin";
     password.autocomplete = mode === "signin" ? "current-password" : "new-password";
     say("");
@@ -81,8 +82,8 @@
           say("Account created. Opening your workspace…", "success");
           goToWorkspace();
         } else {
-          say("Account created. Check your email for the confirmation link, then sign in here.", "success");
           setMode("signin");
+          say("Account created. Check your email for the confirmation link, then sign in here.", "success");
         }
       }
     } catch (error) {
