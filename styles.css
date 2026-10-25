@@ -14,3 +14,12 @@
 /* Handwritten PNG notes library */
 .notes-layout{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(0,1.5fr);gap:18px;align-items:start}.note-upload,.notes-library{padding:22px}.note-field-label{display:block;font-size:12px;font-weight:800;margin:12px 0 6px}.note-upload input[type=text],.note-upload select,.note-upload input[type=file]{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);padding:11px;font:12px Manrope,system-ui,sans-serif}.note-upload input[type=file]{font-size:11px}.notes-library-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.notes-library-heading h3{margin:0;font-size:16px}.notes-library-heading p{margin:4px 0 0}.notes-search{margin:16px 0;width:100%}.notes-search input{width:100%}.notes-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.note-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}.note-preview{display:grid;place-items:center;height:210px;padding:8px;background:var(--bg);border-bottom:1px solid var(--line)}.note-preview img{width:100%;height:100%;object-fit:contain}.note-card-body{padding:12px}.note-card h4{margin:8px 0 2px;font-size:13px;overflow-wrap:anywhere}.note-card-body p{margin:4px 0}.note-card-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}.note-card-actions .button{padding:8px 10px;font-size:10px}.note-card-actions .text-button{margin:0}.notes-library .muted{font-size:11px}
 @media(max-width:800px){.notes-layout{grid-template-columns:1fr}.notes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.notes-grid{grid-template-columns:1fr}.note-preview{height:260px}.note-upload,.notes-library{padding:16px}}
+
+/* Cloud account controls */
+.cloud-account{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(280px,1.2fr);gap:24px;margin-bottom:22px;padding:24px}
+.cloud-account h3{margin-top:0}
+.cloud-auth-form{display:grid;gap:9px}
+.cloud-auth-form input{width:100%;box-sizing:border-box}
+.cloud-auth-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.cloud-auth-actions [hidden]{display:none!important}
+@media(max-width:720px){.cloud-account{grid-template-columns:1fr;padding:18px}}
