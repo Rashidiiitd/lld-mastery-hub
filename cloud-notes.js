@@ -1,12 +1,10 @@
 /* Cloud notes powered by Supabase Auth, Database, and private Storage. */
 (() => {
   "use strict";
-  const SUPABASE_URL = "https://qnzjvghhuvygftntalng.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EKvl8YYlYJUFkWFOEeBJrg_cSpuxXO5";
   const BUCKET = "handwritten-notes";
   const $ = (selector) => document.querySelector(selector);
-  if (!window.supabase || !$("#note-upload-form")) return;
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  if (!window.masterySupabase || !$("#note-upload-form")) return;
+  const client = window.masterySupabase;
   let currentUser = null;
   let notesCache = [];
   const feedback = (message) => {
