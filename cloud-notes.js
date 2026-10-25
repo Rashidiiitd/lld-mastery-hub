@@ -54,10 +54,20 @@
       const active = button.dataset.noteFilter === activeCollection;
       if (button.classList.contains("note-filter")) { button.classList.toggle("active", active); button.setAttribute("aria-pressed", String(active)); }
     });
-    $("#notes-count").textContent = notesCache.length + " page" + (notesCache.length === 1 ? "" : "s");
-    $("#notes-grid").innerHTML = filtered.length ? filtered.map(n =>
-      '<article class="note-card"><a class="note-preview" href="' + n.imageUrl + '" target="_blank" rel="noreferrer" aria-label="Open ' + escapeHtml(n.title) + ' in a new tab"><img src="' + n.imageUrl + '" alt="' + escapeHtml(n.title) + '" loading="lazy"></a><div class="note-card-body"><span class="chip">' + escapeHtml(n.topic) + '</span><h4>' + escapeHtml(n.title) + '</h4><p class="muted small">' + new Date(n.created_at).toLocaleDateString() + '</p><div class="note-card-actions"><button type="button" class="button secondary" data-download-note="' + n.id + '">Download PNG</button><button type="button" class="text-button" data-delete-note="' + n.id + '">Delete</button></div></div></article>'
-    ).join("") : '<p class="muted small">' + (query ? "No notes match that search." : (currentUser ? "No cloud notes yet. Upload your first handwritten PNG." : "Sign in to see your notes from any device.")) + '</p>';
+    $("#notes-count").textContent = filtered.length + " of " + notesCache.length + " page" + (notesCache.length === 1 ? "" : "s");
+    const groups = new Map();
+    filtered.forEach(note => {
+      const topic = note.topic || "Uncategorized";
+      if (!groups.has(topic)) groups.set(topic, []);
+      groups.get(topic).push(note);
+    });
+    const topicNames = [...groups.keys()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    const cardHtml = n =>
+      '<article class="note-card"><a class="note-preview" href="' + n.imageUrl + '" target="_blank" rel="noreferrer" aria-label="Open ' + escapeHtml(n.title) + ' in a new tab"><img src="' + n.imageUrl + '" alt="' + escapeHtml(n.title) + '" loading="lazy"></a><div class="note-card-body"><h4>' + escapeHtml(n.title) + '</h4><p class="muted small">' + new Date(n.created_at).toLocaleDateString() + '</p><div class="note-card-actions"><button type="button" class="button secondary" data-download-note="' + n.id + '">Download PNG</button><button type="button" class="text-button" data-delete-note="' + n.id + '">Delete</button></div></div></article>';
+    $("#notes-grid").innerHTML = topicNames.length ? topicNames.map(topic => {
+      const topicNotes = groups.get(topic).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      return '<details class="note-topic-group" open><summary><span class="note-topic-name">' + escapeHtml(topic) + '</span><span class="note-topic-count">' + topicNotes.length + ' page' + (topicNotes.length === 1 ? '' : 's') + '</span></summary><div class="notes-grid note-topic-grid">' + topicNotes.map(cardHtml).join("") + '</div></details>';
+    }).join("") : '<p class="muted small">' + (query ? "No notes match that search." : (currentUser ? "No cloud notes yet. Upload your first handwritten PNG." : "Sign in to see your notes from any device.")) + '</p>';
     $("#notes-grid").querySelectorAll("[data-download-note]").forEach(btn => btn.addEventListener("click", async () => {
       const note = notesCache.find(n => n.id === btn.dataset.downloadNote);
       if (!note) return;
@@ -82,6 +92,11 @@
         await loadNotes();
       } catch (error) { noteFeedback("Could not delete note: " + error.message); }
     }));
+    $("#notes-grid").querySelectorAll(".note-topic-group").forEach(group => {
+      group.addEventListener("toggle", () => {
+        group.classList.toggle("is-collapsed", !group.open);
+      });
+    });
   }
   async function refreshSession() {
     const { data, error } = await client.auth.getSession();
@@ -94,6 +109,12 @@
     }
   }
   $("#notes-search").addEventListener("input", renderNotes);
+  $("#expand-all-topics")?.addEventListener("click", () => {
+    $("#notes-grid").querySelectorAll(".note-topic-group").forEach(group => { group.open = true; group.classList.remove("is-collapsed"); });
+  });
+  $("#collapse-all-topics")?.addEventListener("click", () => {
+    $("#notes-grid").querySelectorAll(".note-topic-group").forEach(group => { group.open = false; group.classList.add("is-collapsed"); });
+  });
   const topicSelect = $("#note-topic");
   const customTopicWrap = $("#custom-topic-wrap");
   const customTopicInput = $("#custom-topic");
