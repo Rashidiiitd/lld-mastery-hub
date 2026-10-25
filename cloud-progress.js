@@ -1,13 +1,11 @@
 /* Sync roadmap and study progress with the authenticated Supabase account. */
 (() => {
   "use strict";
-  const URL = "https://qnzjvghhuvygftntalng.supabase.co";
-  const KEY = "sb_publishable_EKvl8YYlYJUFkWFOEeBJrg_cSpuxXO5";
   const TABLE = "user_progress";
   const $ = s => document.querySelector(s);
   const status = $("#progress-sync-status");
-  if (!status || !window.supabase) return;
-  const client = window.supabase.createClient(URL, KEY);
+  if (!status || !window.masterySupabase) return;
+  const client = window.masterySupabase;
   let userId = null, hydrated = false, timer = null, pushing = false, queuedState = null;
   const say = message => { status.textContent = message; };
   const mergeStates = (local, remote) => {
