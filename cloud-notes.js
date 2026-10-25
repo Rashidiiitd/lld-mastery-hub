@@ -113,34 +113,58 @@
   }));
   $("#note-upload-form").addEventListener("submit", async event => {
     event.preventDefault();
-    const title = $("#note-title").value.trim(), selectedTopic = $("#note-topic").value, file = $("#note-image").files[0];
+    const title = $("#note-title").value.trim();
+    const selectedTopic = $("#note-topic").value;
+    const files = Array.from($("#note-image").files || []);
     const customName = $("#custom-topic").value.trim();
     const topic = selectedTopic === "__custom__"
       ? ($("#note-topic").selectedOptions[0]?.dataset.collection || "LLD") + " — " + customName
       : selectedTopic;
     if (!currentUser) { noteFeedback("Please sign in first."); return; }
-    if (!title || !file) { noteFeedback("Add a title and choose a PNG image first."); return; }
-    if (selectedTopic === "__custom__" && !customName) { noteFeedback("Enter a name for your custom topic."); $("#custom-topic").focus(); return; }
-    if (file.type !== "image/png" && !file.name.toLowerCase().endsWith(".png")) { noteFeedback("Please choose a PNG file."); return; }
-    if (file.size > 20 * 1024 * 1024) { noteFeedback("This PNG is larger than 20 MB. Choose a smaller image."); return; }
+    if (!title || !files.length) { noteFeedback("Add a title and choose one or more PNG images first."); return; }
+    if (selectedTopic === "__custom__" && !customName) {
+      noteFeedback("Enter a name for your custom topic."); $("#custom-topic").focus(); return;
+    }
+    const invalidFile = files.find(file => file.type !== "image/png" && !file.name.toLowerCase().endsWith(".png"));
+    if (invalidFile) { noteFeedback('"' + invalidFile.name + '" is not a PNG file. Please select PNG images only.'); return; }
+    const oversizedFile = files.find(file => file.size > 20 * 1024 * 1024);
+    if (oversizedFile) { noteFeedback('"' + oversizedFile.name + '" is larger than 20 MB. Choose a smaller image.'); return; }
+
     const submit = $("#note-upload-form button[type=submit]");
-    submit.disabled = true; noteFeedback("Uploading PNG to your private cloud storage…");
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path = currentUser.id + "/" + Date.now() + "-" + safeName;
+    submit.disabled = true;
+    let saved = 0;
+    const uploadedPaths = [];
     try {
-      const { error: uploadError } = await client.storage.from(BUCKET).upload(path, file, { contentType: "image/png", upsert: false });
-      if (uploadError) throw uploadError;
-      const { error } = await client.from("handwritten_notes").insert({ user_id: currentUser.id, title, topic, storage_path: path });
-      if (error) {
-        await client.storage.from(BUCKET).remove([path]);
-        throw error;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        noteFeedback("Uploading PNG " + (i + 1) + " of " + files.length + "…");
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = currentUser.id + "/" + Date.now() + "-" + i + "-" + safeName;
+        const { error: uploadError } = await client.storage.from(BUCKET).upload(path, file, { contentType: "image/png", upsert: false });
+        if (uploadError) throw new Error('Upload failed for "' + file.name + '": ' + uploadError.message);
+        uploadedPaths.push(path);
+        const baseName = file.name.replace(/\.png$/i, "").replace(/[_-]+/g, " ").trim();
+        const noteTitle = files.length === 1 ? title : title + " — " + (baseName || ("Page " + (i + 1)));
+        const { error } = await client.from("handwritten_notes").insert({
+          user_id: currentUser.id, title: noteTitle, topic, storage_path: path
+        });
+        if (error) {
+          await client.storage.from(BUCKET).remove([path]);
+          uploadedPaths.pop();
+          throw new Error('Could not save "' + file.name + '": ' + error.message);
+        }
+        saved++;
       }
       $("#note-upload-form").reset();
       customTopicWrap.hidden = true; customTopicInput.required = false;
-      noteFeedback("Saved to your cloud library.");
+      noteFeedback(saved + (saved === 1 ? " handwritten page saved." : " handwritten pages saved.") + " ✓");
       await loadNotes();
-    } catch (error) { noteFeedback("Upload failed: " + error.message); }
-    finally { submit.disabled = !currentUser; }
+    } catch (error) {
+      noteFeedback((saved ? saved + " page(s) saved before an error. " : "") + "Upload failed: " + error.message);
+      await loadNotes().catch(() => {});
+    } finally {
+      submit.disabled = !currentUser;
+    }
   });
   client.auth.onAuthStateChange((_event, session) => {
     const user = session?.user || null;
