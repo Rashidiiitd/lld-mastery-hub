@@ -25,3 +25,27 @@
 @media(max-width:720px){.cloud-account{grid-template-columns:1fr;padding:18px}}
 
 #progress-sync-status{display:inline-block;margin-left:5px;font-weight:600}
+
+
+/* Homepage: first-principles LLD learning methodology */
+.learning-method{padding-top:45px;padding-bottom:55px}
+.method-intro{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;padding:24px;margin-bottom:16px;align-items:center}
+.method-kicker{font:500 10px 'DM Mono',monospace;letter-spacing:1.4px;color:var(--accent)}
+.method-intro h3,.method-bottom h3{font-size:20px;letter-spacing:-.5px;margin:8px 0}
+.method-intro p,.method-bottom p{font-size:12px;margin:0;max-width:680px}
+.method-principle{padding:18px;border:1px solid #75e0c155;border-radius:12px;background:linear-gradient(135deg,var(--surface-2),var(--surface))}
+.method-principle span{display:block;color:var(--accent);font:10px 'DM Mono',monospace;letter-spacing:1px;margin-bottom:8px}
+.method-principle strong{font-size:14px;line-height:1.6}
+.method-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.method-card{min-height:185px;display:flex;flex-direction:column;align-items:flex-start;padding:17px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}
+.method-number{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--surface-3);color:var(--accent);font:12px 'DM Mono',monospace}
+.method-card h3{font-size:13px;margin:14px 0 6px}
+.method-card p{font-size:11px;line-height:1.75;color:var(--muted);margin:0}
+.method-output{font:9px 'DM Mono',monospace;letter-spacing:.5px;color:var(--muted);margin-top:auto;padding-top:15px}
+.method-bottom{display:flex;justify-content:space-between;align-items:center;gap:22px;padding:22px 2px 8px}
+.method-bottom>div{max-width:760px}
+.method-bottom .button{flex-shrink:0}
+.method-note{font-size:10px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin:15px 0 0}
+@media(max-width:900px){.method-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.method-intro{grid-template-columns:1fr}}
+@media(max-width:600px){.learning-method{padding-top:35px}.method-grid{grid-template-columns:1fr 1fr;gap:9px}.method-card{min-height:200px;padding:13px}.method-card h3{font-size:12px}.method-card p{font-size:10px}.method-output{font-size:8px}.method-bottom{align-items:flex-start;flex-direction:column}.method-bottom h3{font-size:18px}.method-intro{padding:17px}.method-principle{padding:14px}}
+@media(max-width:390px){.method-grid{grid-template-columns:1fr}.method-card{min-height:0}.method-output{padding-top:10px}}
