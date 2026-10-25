@@ -5,25 +5,25 @@
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EKvl8YYlYJUFkWFOEeBJrg_cSpuxXO5";
   const BUCKET = "handwritten-notes";
   const $ = (selector) => document.querySelector(selector);
-  const authForm = $("#cloud-auth-form");
-  if (!authForm || !window.supabase) return;
+  if (!window.supabase || !$("#note-upload-form")) return;
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   let currentUser = null;
   let notesCache = [];
-  const feedback = (message) => { $("#cloud-auth-feedback").textContent = message || ""; };
+  const feedback = (message) => {
+    const status = $("#cloud-account-status");
+    if (status) status.textContent = message || "";
+  };
   const noteFeedback = (message) => { $("#note-feedback").textContent = message || ""; };
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function setAuthUi(user) {
     currentUser = user || null;
-    $("#cloud-signin").hidden = !!user;
-    $("#cloud-signup").hidden = !!user;
-    $("#cloud-signout").hidden = !user;
-    $("#cloud-email").disabled = !!user;
-    $("#cloud-password").disabled = !!user;
+    const accountStatus = $("#cloud-account-status");
+    const accountLink = $("#cloud-auth-link");
+    if (accountStatus) accountStatus.textContent = user
+      ? "Signed in as " + user.email + ". Notes and learning progress sync to this account."
+      : "Sign in to upload notes and sync learning progress across devices.";
+    if (accountLink) accountLink.textContent = user ? "Account & sign-out →" : "Sign in or create account →";
     $("#note-upload-form").querySelectorAll("input,select,button").forEach(el => { el.disabled = !user; });
-    $("#cloud-account .cloud-account-copy p").textContent = user
-      ? "Signed in as " + user.email + ". Your notes are linked to this account."
-      : "Create an account or sign in with the same email on every device.";
     if (!user) {
       notesCache = [];
       renderNotes();
@@ -89,35 +89,6 @@
       catch (err) { $("#notes-grid").innerHTML = '<p class="muted small">Cloud setup is not finished yet. Run the SQL setup steps shown in the instructions.</p>'; noteFeedback("Could not load notes: " + err.message); }
     }
   }
-  authForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const email = $("#cloud-email").value.trim(), password = $("#cloud-password").value;
-    $("#cloud-signin").disabled = true; feedback("Signing in…");
-    try {
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      setAuthUi(data.user); feedback("Signed in successfully.");
-      await loadNotes(); noteFeedback("Signed in. Your cloud notes are ready.");
-    } catch (error) { feedback(error.message); }
-    finally { $("#cloud-signin").disabled = !!currentUser; }
-  });
-  $("#cloud-signup").addEventListener("click", async () => {
-    const email = $("#cloud-email").value.trim(), password = $("#cloud-password").value;
-    if (!email || password.length < 6) { feedback("Enter a valid email and a password of at least 6 characters."); return; }
-    feedback("Creating your account…");
-    const { data, error } = await client.auth.signUp({ email, password, options: { emailRedirectTo: window.location.href } });
-    if (error) { feedback(error.message); return; }
-    if (data.session) {
-      setAuthUi(data.user); feedback("Account created and signed in."); await loadNotes();
-    } else {
-      feedback("Account created. Check your email to confirm it, then sign in here.");
-    }
-  });
-  $("#cloud-signout").addEventListener("click", async () => {
-    const { error } = await client.auth.signOut();
-    if (error) { feedback(error.message); return; }
-    setAuthUi(null); feedback("Signed out."); noteFeedback("Sign in to access cloud notes.");
-  });
   $("#notes-search").addEventListener("input", renderNotes);
   $("#note-upload-form").addEventListener("submit", async event => {
     event.preventDefault();
