@@ -1,9 +1,8 @@
 (() => {
   "use strict";
-  const SUPABASE_URL = "https://qnzjvghhuvygftntalng.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_EKvl8YYlYJUFkWFOEeBJrg_cSpuxXO5";
   const $ = (id) => document.getElementById(id);
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const client = window.masterySupabase;
+  if (!client) return;
   const form = $("auth-form");
   const feedback = $("auth-feedback");
   const submit = $("auth-submit");
