@@ -7,6 +7,8 @@
   const client = window.masterySupabase;
   let currentUser = null;
   let notesCache = [];
+  let activeCollection = "All";
+  const collectionOf = topic => /^(LLD|C\\+\\+|System Design|DSA) — /.exec(topic || "")?.[1] || "LLD";
   const feedback = (message) => {
     const status = $("#cloud-account-status");
     if (status) status.textContent = message || "";
@@ -47,7 +49,11 @@
   }
   function renderNotes() {
     const query = ($("#notes-search")?.value || "").trim().toLowerCase();
-    const filtered = notesCache.filter(n => (n.title + " " + n.topic).toLowerCase().includes(query));
+    const filtered = notesCache.filter(n => (activeCollection === "All" || collectionOf(n.topic) === activeCollection) && (n.title + " " + n.topic).toLowerCase().includes(query));
+    document.querySelectorAll("[data-note-filter]").forEach(button => {
+      const active = button.dataset.noteFilter === activeCollection;
+      if (button.classList.contains("note-filter")) { button.classList.toggle("active", active); button.setAttribute("aria-pressed", String(active)); }
+    });
     $("#notes-count").textContent = notesCache.length + " page" + (notesCache.length === 1 ? "" : "s");
     $("#notes-grid").innerHTML = filtered.length ? filtered.map(n =>
       '<article class="note-card"><a class="note-preview" href="' + n.imageUrl + '" target="_blank" rel="noreferrer" aria-label="Open ' + escapeHtml(n.title) + ' in a new tab"><img src="' + n.imageUrl + '" alt="' + escapeHtml(n.title) + '" loading="lazy"></a><div class="note-card-body"><span class="chip">' + escapeHtml(n.topic) + '</span><h4>' + escapeHtml(n.title) + '</h4><p class="muted small">' + new Date(n.created_at).toLocaleDateString() + '</p><div class="note-card-actions"><button type="button" class="button secondary" data-download-note="' + n.id + '">Download PNG</button><button type="button" class="text-button" data-delete-note="' + n.id + '">Delete</button></div></div></article>'
@@ -88,6 +94,14 @@
     }
   }
   $("#notes-search").addEventListener("input", renderNotes);
+  document.querySelectorAll("[data-note-filter]").forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    activeCollection = button.dataset.noteFilter;
+    renderNotes();
+    if (button.classList.contains("note-collection-card")) {
+      $("#notes").scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }));
   $("#note-upload-form").addEventListener("submit", async event => {
     event.preventDefault();
     const title = $("#note-title").value.trim(), topic = $("#note-topic").value, file = $("#note-image").files[0];
