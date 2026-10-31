@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comic Kit Demo</title>
+<link rel="stylesheet" href="comic.css">
+<script src="comic.js" defer></script>
+</head>
+<body class="comic">
+<main class="page">
+
+  <h1>Multithreading Fundamentals</h1>
+  <p class="sub">Comic kit demo · <span data-progress></span></p>
+
+  <!-- CAST SHEET -->
+  <section class="strip">
+    <article class="panel wide" style="--tilt:-.2deg">
+      <header class="ph"><span class="tag">THE CAST</span><h2>Meet the characters</h2></header>
+      <div class="scene">
+        <comic-char name="main" label="main"></comic-char>
+        <comic-char name="worker" label="worker"></comic-char>
+        <comic-char name="sched" label="scheduler"></comic-char>
+        <comic-char name="mutex" label="mutex"></comic-char>
+        <comic-char name="cpu" label="cpu"></comic-char>
+        <comic-char name="os" label="os"></comic-char>
+      </div>
+      <div class="scene">
+        <comic-char name="main" mood="happy" size="s" label="happy"></comic-char>
+        <comic-char name="main" mood="sad" size="s" label="sad"></comic-char>
+        <comic-char name="main" mood="think" size="s" label="think"></comic-char>
+        <comic-char name="main" mood="shock" size="s" label="shock"></comic-char>
+        <comic-char name="worker" flip size="s" label="flip"></comic-char>
+      </div>
+      <p class="aside">same cast in every chapter, readers learn them once</p>
+    </article>
+  </section>
+
+  <section class="strip">
+
+    <!-- 01 -->
+    <article class="panel" data-id="01" style="--tilt:-.4deg">
+      <header class="ph"><span class="num">01</span><span class="tag">FOUNDATION</span><h2>Process vs Thread</h2></header>
+      <div class="room" data-label="PROCESS · shared code, globals, heap">
+        <div class="scene">
+          <div class="who">
+            <p class="bubble">my own stack!</p>
+            <comic-char name="worker" size="s" label="T1"></comic-char>
+          </div>
+          <div class="who">
+            <p class="bubble r">me too!</p>
+            <comic-char name="worker" size="s" flip label="T2"></comic-char>
+          </div>
+          <div class="who">
+            <p class="bubble">and me</p>
+            <comic-char name="worker" size="s" label="T3"></comic-char>
+          </div>
+        </div>
+      </div>
+      <p class="note">Threads share the heap. Each has its own stack.</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- 05 -->
+    <article class="panel" data-id="05" style="--tilt:.3deg">
+      <header class="ph"><span class="num">05</span><span class="tag">LIFETIME</span><h2>join() vs detach()</h2></header>
+      <div class="scene">
+        <div class="who">
+          <p class="bubble thought">…tap tap…</p>
+          <comic-char name="main" mood="think" label="main"></comic-char>
+        </div>
+        <div class="who">
+          <p class="bubble r">almost done!</p>
+          <comic-char name="worker" flip label="worker"></comic-char>
+        </div>
+      </div>
+      <p class="good">join()</p>
+      <div class="lane"><b>main</b><i class="run" style="--w:2">create</i><i class="wait" style="--w:5">waiting</i><i class="run" style="--w:2">go on</i></div>
+      <div class="lane"><b>worker</b><i class="gap" style="--w:2"></i><i class="run" style="--w:5">work</i><i class="gap" style="--w:2"></i></div>
+      <p class="bad">detach()</p>
+      <div class="lane"><b>main</b><i class="run" style="--w:2">create</i><i class="run" style="--w:3">go on</i><i class="gap" style="--w:1"></i><i class="boom" style="--w:2">x gone</i></div>
+      <div class="lane"><b>worker</b><i class="gap" style="--w:2"></i><i class="run" style="--w:5">uses x…</i><i class="boom" style="--w:2">💥</i></div>
+      <p class="aside">detach = "good luck!"</p>
+      <p class="note">Prefer join() or std::jthread.</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- 08 -->
+    <article class="panel" data-id="08" style="--tilt:-.2deg">
+      <header class="ph"><span class="num">08</span><span class="tag">OPERATING SYSTEM</span><h2>Scheduling &amp; preemption</h2></header>
+      <div class="scene">
+        <div class="who">
+          <p class="bubble thought">I pick. Order? No promises.</p>
+          <comic-char name="sched" mood="think" label="scheduler"></comic-char>
+        </div>
+        <span class="arrow">→</span>
+        <div class="who">
+          <p class="gray">queue</p>
+          <div><span class="chip on">A</span> <span class="chip">B</span> <span class="chip">C</span></div>
+        </div>
+        <span class="arrow">→</span>
+        <comic-char name="cpu" mood="shock" size="s" label="cpu"></comic-char>
+      </div>
+      <p class="aside">time slice over → next!</p>
+      <p class="note">Never rely on output order without synchronization.</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- 12 -->
+    <article class="panel" data-id="12" style="--tilt:.4deg">
+      <header class="ph"><span class="num">12</span><span class="tag">C++20</span><h2>stop_token</h2></header>
+      <div class="scene">
+        <div class="who">
+          <p class="bubble">Please stop at a safe point.</p>
+          <comic-char name="main" label="controller"></comic-char>
+        </div>
+        <div class="who">
+          <p class="bubble r">Finishing this step…</p>
+          <comic-char name="worker" mood="shock" flip label="worker"></comic-char>
+        </div>
+      </div>
+<pre class="code"><span class="k">void</span> <span class="f">work</span>(std::stop_token s) {
+  <span class="k">while</span> (!s.stop_requested()) {
+    <span class="c">// small unit of work</span>
+  }
+}</pre>
+      <p class="note">Cancellation is a protocol, not a kill switch.</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+  </section>
+</main>
+</body>
+</html>
