@@ -1,41 +1,215 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Comic-style C++ multithreading fundamentals."><title>Chapter 1 — Multithreading Fundamentals | LLD Mastery Hub</title><link rel="stylesheet" href="../../styles.css?v=12"><link rel="stylesheet" href="comic-notes.css?v=1"><script src="../../theme.js?v=1" defer></script><script src="chapter-1.js?v=1" defer></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Comic-style C++ multithreading fundamentals."><title>Chapter 1 — Multithreading Fundamentals | LLD Mastery Hub</title><link rel="stylesheet" href="../../styles.css?v=12"><link rel="stylesheet" href="../../comic/comic.css?v=2"><link rel="stylesheet" href="comic-notes.css?v=2"><script src="../../theme.js?v=1" defer></script><script src="../../comic/comic.js?v=1" defer></script><script src="chapter-1.js?v=2" defer></script></head>
 <body class="comic-notes-page"><a class="skip-link" href="#main">Skip to content</a>
 <header class="topbar"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><nav class="topnav" aria-label="Main navigation"><a href="../../lld.html">LLD</a><a href="../../cpp-interview.html">C++ Interviews</a><a href="../../resources.html">Resources</a></nav><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme">☼</button></header>
 <main id="main" class="comic-main">
 <section class="comic-hero"><div><p class="eyebrow">C++ CONCURRENCY · CHAPTER 01</p><h1>Multithreading<br><span class="gradient-text">Fundamentals</span></h1><p class="comic-lede">Threads, execution, and their lifetimes — explained as a mini technical comic.</p><div class="comic-meta"><span>12 comic panels</span><span>·</span><span>First principles</span><span>·</span><span>C++11 → C++20</span></div><div class="comic-actions"><a class="button secondary" href="../../lld.html">← Back to LLD roadmap</a><button class="button primary" id="mark-chapter" type="button">Mark chapter complete ✓</button></div></div><aside class="chapter-progress"><div class="progress-head"><strong>Your progress</strong><span id="progress-label">0 / 12 panels</span></div><div class="progress-track"><span id="chapter-progress-bar"></span></div><p class="muted small">Mark each panel after you can explain it without looking.</p></aside></section>
-<section class="comic-intro"><div class="intro-bubble"><strong>Our story:</strong> A program starts doing more than one thing. How does the operating system help it make progress, and how do we manage each thread safely?</div><div class="legend"><span><i class="dot dot-blue"></i> Core idea</span><span><i class="dot dot-purple"></i> OS / runtime</span><span><i class="dot dot-orange"></i> C++ API</span><span><i class="dot dot-green"></i> Remember</span></div></section>
-<div class="comic-grid">
-<article class="comic-panel" id="panel-1" data-panel="1"><div class="panel-head"><span class="panel-number">01</span><div><p class="panel-kicker">FOUNDATION</p><h2>Process vs Thread</h2></div></div><div class="scene"><div class="scene-label">One process = one running program container</div><div class="process-box"><div class="process-title">Process <small>its own address space</small></div><div class="shared-memory"><b>Shared resources</b><span>code · globals · heap · open files</span></div><div class="thread-row"><div class="mini-thread blue">T1<small>stack + registers</small></div><div class="mini-thread purple">T2<small>stack + registers</small></div><div class="mini-thread green">T3<small>stack + registers</small></div></div></div></div><div class="dialogue"><p><b>Process:</b> “I own the resources and address space.”</p><p><b>Thread:</b> “I share process resources, but I have my own stack and execution state.”</p></div><p class="panel-copy">A process is a resource container. A thread is an execution path inside that process. Shared memory enables communication, but threads must coordinate access.</p><div class="takeaway">Threads share code, globals and heap; each thread has its own stack, registers and program counter.</div><button class="panel-done" data-complete="1" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-2" data-panel="2"><div class="panel-head"><span class="panel-number">02</span><div><p class="panel-kicker">EXECUTION</p><h2>Concurrency vs Parallelism</h2></div></div><div class="scene compare-scene"><div class="compare-lane"><b>Concurrency · one CPU</b><div class="time-strip"><span>A</span><span>B</span><span>A</span><span>B</span><span>A</span></div><small>Tasks make progress by interleaving.</small></div><div class="compare-lane"><b>Parallelism · multiple cores</b><div class="core-strip"><span>Core 1 <i>A running</i></span><span>Core 2 <i>B running</i></span></div><small>Tasks execute at the same instant.</small></div></div><div class="dialogue"><p><b>Concurrency:</b> “I take turns so both tasks progress.”</p><p><b>Parallelism:</b> “We are literally running at the same time!”</p></div><p class="panel-copy">Concurrency is about structuring multiple tasks in progress. Parallelism is simultaneous execution, usually on multiple cores.</p><div class="takeaway">Concurrency is coordination; parallelism is simultaneous execution.</div><button class="panel-done" data-complete="2" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-3" data-panel="3"><div class="panel-head"><span class="panel-number">03</span><div><p class="panel-kicker">C++ API</p><h2>Create a thread</h2></div></div><div class="scene spawn-scene"><div class="actor main-actor">Main thread<small>creates worker</small></div><div class="spawn-arrow">std::thread t(worker) →</div><div class="actor worker-actor">Worker<small>runs callable</small></div></div><pre class="code-card"><code>#include &lt;thread&gt;
+
+<div class="comic" data-theme="site">
+
+<section class="comic-intro"><div class="scene">
+<div class="who"><p class="bubble"><strong>Our story:</strong> A program starts doing more than one thing. How does the operating system help it make progress, and how do we manage each thread safely?</p><comic-char name="os" mood="think" size="s" label="narrator"></comic-char></div>
+<div class="pair"><comic-char name="main" size="s" label="main"></comic-char><comic-char name="worker" size="s" flip label="worker"></comic-char><comic-char name="sched" size="s" label="scheduler"></comic-char><comic-char name="cpu" size="s" label="cpu"></comic-char></div>
+</div></section>
+
+<div class="strip">
+
+<!-- 01 -->
+<article class="panel" id="panel-1" data-panel="1" style="--tilt:-.4deg">
+<header class="ph"><span class="num">01</span><span class="tag">FOUNDATION</span><h2>Process vs Thread</h2></header>
+<div class="scene"><div class="who"><p class="bubble">I own the resources and address space.</p><comic-char name="os" size="s" label="process"></comic-char></div></div>
+<div class="room" data-label="PROCESS · shared: code · globals · heap · open files">
+<div class="scene">
+<div class="who"><p class="bubble">my own stack!</p><comic-char name="worker" size="s" label="T1"></comic-char></div>
+<div class="who"><p class="bubble r">my own registers!</p><comic-char name="worker" size="s" flip label="T2"></comic-char></div>
+<div class="who"><p class="bubble">my own PC!</p><comic-char name="worker" size="s" label="T3"></comic-char></div>
+</div></div>
+<details class="more"><summary>Details</summary><p>A process is a resource container. A thread is an execution path inside that process. Shared memory enables communication, but threads must coordinate access.</p></details>
+<p class="note">Threads share code, globals and heap; each thread has its own stack, registers and program counter.</p>
+<button class="panel-done" data-complete="1" type="button">Mark panel learned</button>
+</article>
+
+<!-- 02 -->
+<article class="panel" id="panel-2" data-panel="2" style="--tilt:.3deg">
+<header class="ph"><span class="num">02</span><span class="tag">EXECUTION</span><h2>Concurrency vs Parallelism</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">I take turns so both tasks progress.</p><comic-char name="cpu" size="s" label="1 core"></comic-char></div>
+<div class="who"><p class="bubble r">We are literally running at the same time!</p><div class="pair"><comic-char name="cpu" size="s" label="core 1"></comic-char><comic-char name="cpu" size="s" flip label="core 2"></comic-char></div></div>
+</div>
+<p class="tag">CONCURRENCY · one CPU, interleaving</p>
+<div class="lane"><b>1 core</b><i class="a">A</i><i class="b">B</i><i class="a">A</i><i class="b">B</i><i class="a">A</i></div>
+<p class="tag">PARALLELISM · multiple cores, same instant</p>
+<div class="lane"><b>core 1</b><i class="a" style="--w:5">A running</i></div>
+<div class="lane"><b>core 2</b><i class="b" style="--w:5">B running</i></div>
+<details class="more"><summary>Details</summary><p>Concurrency is about structuring multiple tasks in progress. Parallelism is simultaneous execution, usually on multiple cores.</p></details>
+<p class="note">Concurrency is coordination; parallelism is simultaneous execution.</p>
+<button class="panel-done" data-complete="2" type="button">Mark panel learned</button>
+</article>
+
+<!-- 03 -->
+<article class="panel" id="panel-3" data-panel="3" style="--tilt:-.2deg">
+<header class="ph"><span class="num">03</span><span class="tag">C++ API</span><h2>Create a thread</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">std::thread t(worker);</p><comic-char name="main" size="s" label="main thread"></comic-char></div>
+<span class="arrow">→</span>
+<div class="who"><p class="bubble r">Running the callable!</p><comic-char name="worker" size="s" flip label="worker"></comic-char></div>
+</div>
+<pre class="code"><code>#include &lt;thread&gt;
 #include &lt;iostream&gt;
 
 void worker() {
-    std::cout &lt;&lt; "Hello from worker\\n";
+    std::cout &lt;&lt; "Hello from worker\n";
 }
 int main() {
     std::thread t(worker);
     t.join();
-}</code><button class="copy-code" type="button">Copy code</button></pre><p class="panel-copy">Constructing a std::thread starts execution. The callable may begin before the constructor returns, so don't assume timing without synchronization.</p><div class="takeaway">A std::thread must be joined or detached before its destructor runs.</div><button class="panel-done" data-complete="3" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-4" data-panel="4"><div class="panel-head"><span class="panel-number">04</span><div><p class="panel-kicker">CALLABLES</p><h2>Functions, lambdas & arguments</h2></div></div><div class="callable-grid"><div class="callable-card"><b>Function</b><code>std::thread t(worker);</code><span>Pass a function</span></div><div class="callable-card"><b>Arguments</b><code>std::thread t(work, 7);</code><span>Arguments copied/moved by default</span></div><div class="callable-card"><b>Lambda</b><code>std::thread t([]{ run(); });</code><span>Inline callable</span></div><div class="callable-card"><b>Functor</b><code>std::thread t(Task{});</code><span>Object with operator()</span></div></div><div class="dialogue"><p><b>Thread constructor:</b> “Give me something callable and its arguments. I’ll invoke it on the new thread.”</p></div><pre class="code-card"><code>int value = 5;
+}</code><button class="copy-code" type="button">Copy code</button></pre>
+<details class="more"><summary>Details</summary><p>Constructing a std::thread starts execution. The callable may begin before the constructor returns, so don't assume timing without synchronization.</p></details>
+<p class="note">A std::thread must be joined or detached before its destructor runs.</p>
+<button class="panel-done" data-complete="3" type="button">Mark panel learned</button>
+</article>
+
+<!-- 04 -->
+<article class="panel" id="panel-4" data-panel="4" style="--tilt:.4deg">
+<header class="ph"><span class="num">04</span><span class="tag">CALLABLES</span><h2>Functions, lambdas &amp; arguments</h2></header>
+<div class="scene"><div class="who"><p class="bubble">Give me something callable and its arguments. I'll invoke it on the new thread.</p><comic-char name="worker" size="s" label="thread ctor"></comic-char></div></div>
+<div class="frames">
+<div class="frame"><b>Function</b><code>std::thread t(worker);</code><small>pass a function</small></div>
+<div class="frame"><b>Arguments</b><code>std::thread t(work, 7);</code><small>copied/moved by default</small></div>
+<div class="frame"><b>Lambda</b><code>std::thread t([]{ run(); });</code><small>inline callable</small></div>
+<div class="frame"><b>Functor</b><code>std::thread t(Task{});</code><small>object with operator()</small></div>
+</div>
+<pre class="code"><code>int value = 5;
 std::thread t([value] {
     std::cout &lt;&lt; value; // captured copy
 });
-t.join();</code><button class="copy-code" type="button">Copy code</button></pre><p class="panel-copy">Use std::ref(x) for intentional reference passing. Ensure the referenced object outlives the thread and shared access is synchronized.</p><button class="panel-done" data-complete="4" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-5" data-panel="5"><div class="panel-head"><span class="panel-number">05</span><div><p class="panel-kicker">LIFETIME</p><h2>join() vs detach()</h2></div></div><div class="scene timeline-scene"><div class="timeline-row"><b>Main</b><div class="timeline"><span>Create</span><span class="wait">join() · waits</span><span>Continue</span></div></div><div class="timeline-row"><b>Worker</b><div class="timeline"><span class="work">Work…</span><span class="finish">Finish</span></div></div><div class="timeline-row"><b>Main + detach</b><div class="timeline"><span>Create</span><span class="detach">detach()</span><span>Continue now</span></div></div></div><div class="dialogue"><p><b>join():</b> “I won't continue until you finish.”</p><p><b>detach():</b> “Keep running independently; I won't wait.”</p></div><ul class="compact-list"><li>join() blocks the calling thread until the worker completes.</li><li>detach() separates execution from the thread object.</li><li>After either operation, the thread object is no longer joinable.</li></ul><div class="warning">Detach carefully: the worker must not outlive objects it references. Completion and cancellation become harder to manage.</div><div class="takeaway">Prefer join() or std::jthread for managed lifetimes.</div><button class="panel-done" data-complete="5" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-6" data-panel="6"><div class="panel-head"><span class="panel-number">06</span><div><p class="panel-kicker">LIFECYCLE</p><h2>Thread states</h2></div></div><div class="scene state-scene"><div class="state-node new">Created</div><div class="state-arrow">start →</div><div class="state-node ready">Ready / runnable</div><div class="state-arrow">scheduled →</div><div class="state-node running">Running</div><div class="state-arrow">wait / block →</div><div class="state-node blocked">Blocked / waiting</div><div class="state-arrow">wake →</div><div class="state-node done">Finished</div></div><p class="panel-copy">Conceptually, a thread may be runnable, executing, waiting for I/O or a lock, or completed. The OS scheduler decides when runnable threads get CPU time.</p><div class="takeaway">A thread can be alive but not currently running — it may be ready or blocked.</div><button class="panel-done" data-complete="6" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-7" data-panel="7"><div class="panel-head"><span class="panel-number">07</span><div><p class="panel-kicker">HARDWARE</p><h2>Cores & context switching</h2></div></div><div class="scene cpu-scene"><div class="cpu-core"><b>Core 1</b><span>Thread A</span></div><div class="cpu-core"><b>Core 2</b><span>Thread B</span></div><div class="switch-cloud">OS saves state<br>and restores another</div></div><div class="dialogue"><p><b>CPU:</b> “A core executes a hardware thread at a time.”</p><p><b>OS:</b> “I switch which thread gets the core.”</p></div><p class="panel-copy">A context switch saves execution state (registers, instruction pointer, etc.) and restores another thread's state. SMT exposes multiple logical CPUs per physical core; they are not equivalent to separate physical cores.</p><div class="takeaway">More threads do not automatically mean more speed. Context switching and contention have costs.</div><button class="panel-done" data-complete="7" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-8" data-panel="8"><div class="panel-head"><span class="panel-number">08</span><div><p class="panel-kicker">OPERATING SYSTEM</p><h2>Scheduling & preemption</h2></div></div><div class="scene scheduler-scene"><div class="ready-queue"><b>Runnable queue</b><span>A</span><span>B</span><span>C</span></div><div class="scheduler">OS scheduler<small>chooses next runnable thread</small></div><div class="cpu-target">CPU</div><div class="schedule-loop">time slice ends ↻</div></div><div class="dialogue"><p><b>Scheduler:</b> “I choose who runs based on policy, priority, and system conditions.”</p></div><p class="panel-copy">Preemption means the OS can pause a running thread and schedule another. Application code should not rely on exact timing or output order without synchronization.</p><div class="takeaway">Thread scheduling is nondeterministic from the program's point of view.</div><button class="panel-done" data-complete="8" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-9" data-panel="9"><div class="panel-head"><span class="panel-number">09</span><div><p class="panel-kicker">IMPLEMENTATION</p><h2>User threads vs kernel threads</h2></div></div><div class="scene user-kernel-scene"><div class="layer"><b>User space</b><span>Application / runtime</span><div class="user-thread">U1</div><div class="user-thread">U2</div><div class="user-thread">U3</div></div><div class="mapping-arrow">runtime / OS mapping ↓</div><div class="layer kernel"><b>Kernel space</b><span>OS-scheduled execution</span><div class="kernel-thread">K1</div><div class="kernel-thread">K2</div></div></div><p class="panel-copy">User-level threads are managed by a runtime/library. Kernel threads are known to and scheduled by the OS. std::thread typically maps to an OS thread on mainstream platforms, but implementation details are platform-dependent.</p><div class="takeaway">Know the distinction; avoid claiming every C++ implementation uses the same mapping.</div><button class="panel-done" data-complete="9" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-10" data-panel="10"><div class="panel-head"><span class="panel-number">10</span><div><p class="panel-kicker">THREAD UTILITIES</p><h2>sleep_for, yield, get_id</h2></div></div><div class="utility-grid"><div><b>sleep_for()</b><code>std::this_thread::sleep_for(200ms);</code><p>Pause this thread for at least a duration; it may resume later.</p></div><div><b>yield()</b><code>std::this_thread::yield();</code><p>Hint that the scheduler may run another thread.</p></div><div><b>get_id()</b><code>std::this_thread::get_id();</code><p>Get an identifier for the current thread.</p></div></div><div class="warning">Neither sleep_for() nor yield() is a synchronization primitive. Don't use timing to fix a race.</div><button class="panel-done" data-complete="10" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-11" data-panel="11"><div class="panel-head"><span class="panel-number">11</span><div><p class="panel-kicker">C++20</p><h2>std::jthread</h2></div></div><div class="scene jthread-scene"><div class="actor main-actor">Scope begins</div><div class="jthread-arrow">construct jthread →</div><div class="actor worker-actor">Worker runs</div><div class="scope-box">Scope ends ↓<br><b>request stop + join</b></div></div><pre class="code-card"><code>#include &lt;thread&gt;
+t.join();</code><button class="copy-code" type="button">Copy code</button></pre>
+<details class="more"><summary>Details</summary><p>Use std::ref(x) for intentional reference passing. Ensure the referenced object outlives the thread and shared access is synchronized.</p></details>
+<p class="note warn">Arguments are copied by default. Want a reference? std::ref(x), and mind the lifetime.</p>
+<button class="panel-done" data-complete="4" type="button">Mark panel learned</button>
+</article>
+
+<!-- 05 -->
+<article class="panel" id="panel-5" data-panel="5" style="--tilt:-.3deg">
+<header class="ph"><span class="num">05</span><span class="tag">LIFETIME</span><h2>join() vs detach()</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble thought">join(): I won't continue until you finish.</p><comic-char name="main" mood="think" size="s" label="main"></comic-char></div>
+<div class="who"><p class="bubble r">Almost done!</p><comic-char name="worker" size="s" flip label="worker"></comic-char></div>
+</div>
+<p class="good">join()</p>
+<div class="lane"><b>Main</b><i class="run" style="--w:2">Create</i><i class="wait" style="--w:5">join() · waits</i><i class="run" style="--w:2">Continue</i></div>
+<div class="lane"><b>Worker</b><i class="gap" style="--w:2"></i><i class="a" style="--w:4">Work…</i><i class="run" style="--w:1">End</i><i class="gap" style="--w:2"></i></div>
+<div class="scene">
+<div class="who"><p class="bubble thought">detach(): keep running independently; I won't wait.</p><comic-char name="main" size="s" label="main"></comic-char></div>
+<div class="who"><p class="bubble r">…is that object still alive?</p><comic-char name="worker" mood="shock" size="s" flip label="worker"></comic-char></div>
+</div>
+<p class="bad">detach()</p>
+<div class="lane"><b>Main</b><i class="run" style="--w:2">Create</i><i class="b" style="--w:1">detach</i><i class="run" style="--w:6">Continue now</i></div>
+<div class="lane"><b>Worker</b><i class="gap" style="--w:3"></i><i class="a" style="--w:4">Work…</i><i class="run" style="--w:1">End</i><i class="gap" style="--w:1"></i></div>
+<details class="more"><summary>Details</summary><ul><li>join() blocks the calling thread until the worker completes.</li><li>detach() separates execution from the thread object.</li><li>After either operation, the thread object is no longer joinable.</li></ul></details>
+<p class="note warn">Detach carefully: the worker must not outlive objects it references. Completion and cancellation become harder to manage.</p>
+<p class="note">Prefer join() or std::jthread for managed lifetimes.</p>
+<button class="panel-done" data-complete="5" type="button">Mark panel learned</button>
+</article>
+
+<!-- 06 -->
+<article class="panel" id="panel-6" data-panel="6" style="--tilt:.3deg">
+<header class="ph"><span class="num">06</span><span class="tag">LIFECYCLE</span><h2>Thread states</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble r">Pick me!</p><comic-char name="worker" mood="shock" size="s" label="ready"></comic-char></div>
+<div class="who"><p class="bubble">On the CPU!</p><comic-char name="worker" size="s" flip label="running"></comic-char></div>
+<div class="who"><p class="bubble thought">waiting on I/O or a lock…</p><comic-char name="worker" mood="sad" size="s" label="blocked"></comic-char></div>
+</div>
+<div class="flow"><span class="chip">Created</span><span class="arrow sm">start →</span><span class="chip">Ready</span><span class="arrow sm">scheduled →</span><span class="chip on">Running</span><span class="arrow sm">returns →</span><span class="chip off">Finished</span></div>
+<div class="flow"><span class="chip on">Running</span><span class="arrow sm">wait / block →</span><span class="chip p">Blocked</span><span class="arrow sm">wake → back to</span><span class="chip">Ready</span></div>
+<details class="more"><summary>Details</summary><p>Conceptually, a thread may be runnable, executing, waiting for I/O or a lock, or completed. The OS scheduler decides when runnable threads get CPU time.</p></details>
+<p class="note">A thread can be alive but not currently running — it may be ready or blocked.</p>
+<button class="panel-done" data-complete="6" type="button">Mark panel learned</button>
+</article>
+
+<!-- 07 -->
+<article class="panel" id="panel-7" data-panel="7" style="--tilt:-.2deg">
+<header class="ph"><span class="num">07</span><span class="tag">HARDWARE</span><h2>Cores &amp; context switching</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">A core executes a hardware thread at a time.</p><comic-char name="cpu" size="s" label="core 1"></comic-char><span class="chip">A</span></div>
+<div class="who"><p class="bubble r">Same here.</p><comic-char name="cpu" size="s" flip label="core 2"></comic-char><span class="chip p">B</span></div>
+</div>
+<div class="scene"><div class="who"><p class="bubble thought">I switch which thread gets the core: save state, restore another.</p><comic-char name="os" mood="think" size="s" label="os"></comic-char></div></div>
+<details class="more"><summary>Details</summary><p>A context switch saves execution state (registers, instruction pointer, etc.) and restores another thread's state. SMT exposes multiple logical CPUs per physical core; they are not equivalent to separate physical cores.</p></details>
+<p class="note">More threads do not automatically mean more speed. Context switching and contention have costs.</p>
+<button class="panel-done" data-complete="7" type="button">Mark panel learned</button>
+</article>
+
+<!-- 08 -->
+<article class="panel" id="panel-8" data-panel="8" style="--tilt:.4deg">
+<header class="ph"><span class="num">08</span><span class="tag">OPERATING SYSTEM</span><h2>Scheduling &amp; preemption</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble thought">I choose who runs based on policy, priority, and system conditions.</p><comic-char name="sched" mood="think" label="scheduler"></comic-char></div>
+</div>
+<div class="scene">
+<div class="who"><p class="gray">runnable queue</p><div class="pair"><span class="chip on">A</span><span class="chip">B</span><span class="chip">C</span></div></div>
+<span class="arrow">→</span>
+<comic-char name="cpu" mood="shock" size="s" label="cpu"></comic-char>
+</div>
+<p class="aside">time slice ends → back to the queue ↻</p>
+<details class="more"><summary>Details</summary><p>Preemption means the OS can pause a running thread and schedule another. Application code should not rely on exact timing or output order without synchronization.</p></details>
+<p class="note">Thread scheduling is nondeterministic from the program's point of view.</p>
+<button class="panel-done" data-complete="8" type="button">Mark panel learned</button>
+</article>
+
+<!-- 09 -->
+<article class="panel" id="panel-9" data-panel="9" style="--tilt:-.4deg">
+<header class="ph"><span class="num">09</span><span class="tag">IMPLEMENTATION</span><h2>User threads vs kernel threads</h2></header>
+<div class="room" data-label="USER SPACE · application / runtime"><div class="flow"><span class="chip">U1</span><span class="chip">U2</span><span class="chip">U3</span></div></div>
+<p class="arrow sm">↓ runtime / OS mapping ↓</p>
+<div class="room" data-label="KERNEL SPACE · OS-scheduled execution"><div class="flow"><span class="chip p">K1</span><span class="chip p">K2</span></div></div>
+<div class="scene"><div class="who"><p class="bubble thought">std::thread usually maps to an OS thread, but it depends on the platform.</p><comic-char name="os" mood="think" size="s" label="os"></comic-char></div></div>
+<details class="more"><summary>Details</summary><p>User-level threads are managed by a runtime/library. Kernel threads are known to and scheduled by the OS. std::thread typically maps to an OS thread on mainstream platforms, but implementation details are platform-dependent.</p></details>
+<p class="note">Know the distinction; avoid claiming every C++ implementation uses the same mapping.</p>
+<button class="panel-done" data-complete="9" type="button">Mark panel learned</button>
+</article>
+
+<!-- 10 -->
+<article class="panel" id="panel-10" data-panel="10" style="--tilt:.3deg">
+<header class="ph"><span class="num">10</span><span class="tag">THREAD UTILITIES</span><h2>sleep_for, yield, get_id</h2></header>
+<div class="frames">
+<div class="frame"><b>sleep_for()</b><code>std::this_thread::sleep_for(200ms);</code><small>pause for at least this long; may resume later</small></div>
+<div class="frame"><b>yield()</b><code>std::this_thread::yield();</code><small>hint: the scheduler may run another thread</small></div>
+<div class="frame"><b>get_id()</b><code>std::this_thread::get_id();</code><small>identifier of the current thread</small></div>
+</div>
+<div class="scene"><div class="who"><p class="bubble shout r">Timing is not synchronization!</p><comic-char name="main" mood="shock" size="s" flip label="main"></comic-char></div></div>
+<p class="note warn">Neither sleep_for() nor yield() is a synchronization primitive. Don't use timing to fix a race.</p>
+<button class="panel-done" data-complete="10" type="button">Mark panel learned</button>
+</article>
+
+<!-- 11 -->
+<article class="panel" id="panel-11" data-panel="11" style="--tilt:-.3deg">
+<header class="ph"><span class="num">11</span><span class="tag">C++20</span><h2>std::jthread</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">std::jthread w(work);</p><comic-char name="main" size="s" label="scope begins"></comic-char></div>
+<span class="arrow">→</span>
+<div class="who"><p class="bubble r">Worker runs.</p><comic-char name="worker" size="s" flip label="worker"></comic-char></div>
+</div>
+<p class="aside">} scope ends → request stop + join, automatically</p>
+<pre class="code"><code>#include &lt;thread&gt;
 void work() { /* do work */ }
 int main() {
     std::jthread worker(work);
     // automatically joins at scope exit
-}</code><button class="copy-code" type="button">Copy code</button></pre><p class="panel-copy">std::jthread automatically joins on destruction. If the callable accepts a stop_token, destruction requests stop before joining.</p><div class="takeaway">jthread improves lifetime safety, but cancellation is cooperative.</div><button class="panel-done" data-complete="11" type="button">Mark panel learned</button></article>
-<article class="comic-panel" id="panel-12" data-panel="12"><div class="panel-head"><span class="panel-number">12</span><div><p class="panel-kicker">C++20</p><h2>stop_token & cooperative cancellation</h2></div></div><div class="scene cancel-scene"><div class="actor worker-actor">Worker<small>checks stop request</small></div><div class="stop-signal">request_stop() →</div><div class="actor main-actor">Controller<small>asks politely</small></div></div><pre class="code-card"><code>#include &lt;thread&gt;
+}</code><button class="copy-code" type="button">Copy code</button></pre>
+<details class="more"><summary>Details</summary><p>std::jthread automatically joins on destruction. If the callable accepts a stop_token, destruction requests stop before joining.</p></details>
+<p class="note">jthread improves lifetime safety, but cancellation is cooperative.</p>
+<button class="panel-done" data-complete="11" type="button">Mark panel learned</button>
+</article>
+
+<!-- 12 -->
+<article class="panel" id="panel-12" data-panel="12" style="--tilt:.2deg">
+<header class="ph"><span class="num">12</span><span class="tag">C++20</span><h2>stop_token &amp; cooperative cancellation</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">Please stop at a safe point.</p><comic-char name="main" size="s" label="controller"></comic-char></div>
+<div class="who"><p class="bubble r">I'll finish this step, check the token, and exit.</p><comic-char name="worker" mood="shock" size="s" flip label="worker"></comic-char></div>
+</div>
+<pre class="code"><code>#include &lt;thread&gt;
 void work(std::stop_token stop) {
     while (!stop.stop_requested()) {
         // do a small unit of work
@@ -44,8 +218,15 @@ void work(std::stop_token stop) {
 int main() {
     std::jthread t(work);
     t.request_stop();
-}</code><button class="copy-code" type="button">Copy code</button></pre><div class="dialogue"><p><b>Controller:</b> “Please stop at a safe point.”</p><p><b>Worker:</b> “I’ll finish this step, check the token, and exit.”</p></div><p class="panel-copy">A stop request does not forcibly terminate a thread. The worker must observe the token. If blocked indefinitely, design a wake-up mechanism too.</p><div class="takeaway">Cancellation is a protocol — not a kill switch.</div><button class="panel-done" data-complete="12" type="button">Mark panel learned</button></article>
+}</code><button class="copy-code" type="button">Copy code</button></pre>
+<details class="more"><summary>Details</summary><p>A stop request does not forcibly terminate a thread. The worker must observe the token. If blocked indefinitely, design a wake-up mechanism too.</p></details>
+<p class="note">Cancellation is a protocol — not a kill switch.</p>
+<button class="panel-done" data-complete="12" type="button">Mark panel learned</button>
+</article>
+
 </div>
+</div>
+
 <section class="chapter-recap"><div><p class="eyebrow">CHAPTER CHECKPOINT</p><h2>Can you explain these without notes?</h2><p class="muted">Try answering aloud. Reveal the short answer after you attempt it.</p></div><div class="recap-questions"><details><summary>Why does a thread have its own stack?</summary><p>Each thread needs its own call frames and local execution state while sharing process-level resources like code and heap.</p></details><details><summary>Does join() make the worker run faster?</summary><p>No. It synchronizes completion by making the calling thread wait; it doesn't speed up the worker.</p></details><details><summary>Why is detach() risky?</summary><p>The detached worker may outlive referenced objects, and its completion/cancellation becomes harder to manage.</p></details><details><summary>Does yield() guarantee another thread runs?</summary><p>No. It's only a scheduling hint and has no synchronization guarantee.</p></details><details><summary>Does request_stop() immediately terminate a jthread?</summary><p>No. It requests cooperative cancellation; the worker must observe the stop token and respond.</p></details></div><div class="chapter-footer-actions"><a class="button secondary" href="../../lld.html">Back to roadmap</a><button class="button primary" id="mark-chapter-bottom" type="button">Mark all panels learned ✓</button></div></section>
 <footer class="footer"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><p>Learn the idea. Draw the flow. Implement it in C++.</p><a href="https://github.com/Rashidiiitd/lld-mastery-hub" target="_blank" rel="noreferrer">View source ↗</a></footer>
 </main></body></html>

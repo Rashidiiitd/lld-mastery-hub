@@ -8,9 +8,12 @@
   function render() {
     panels.forEach(panel => {
       const id = Number(panel.dataset.panel), done = completed.has(id);
-      panel.classList.toggle("learned", done);
+      panel.classList.toggle("done", done);
       const button = panel.querySelector("[data-complete]");
-      if (button) button.textContent = done ? "✓ Learned · click to undo" : "Mark panel learned";
+      if (button) {
+        button.setAttribute("aria-pressed", done);
+        button.textContent = done ? "✓ Learned · click to undo" : "Mark panel learned";
+      }
     });
     const count = completed.size;
     progressLabel.textContent = count + " / " + panels.length + " panels";
@@ -26,7 +29,7 @@
   document.getElementById("mark-chapter")?.addEventListener("click", markAll);
   document.getElementById("mark-chapter-bottom")?.addEventListener("click", markAll);
   document.querySelectorAll(".copy-code").forEach(button => button.addEventListener("click", async () => {
-    const code = button.closest(".code-card")?.querySelector("code")?.innerText || "";
+    const code = button.closest("pre")?.querySelector("code")?.innerText || "";
     try { await navigator.clipboard.writeText(code); button.textContent = "Copied!"; }
     catch (_) { button.textContent = "Select code to copy"; }
     setTimeout(() => { button.textContent = "Copy code"; }, 1400);

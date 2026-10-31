@@ -1,11 +1,14 @@
-/* comic.css — shared comic kit. Pair with comic.js */
+/* comic.css — shared comic kit. Pair with comic.js
+   Tokens are scoped to .comic so they never clash with host-site variables.
+   Standalone: follows the OS theme. On a host site add data-theme="site"
+   to .comic and it follows html.light (the site toggle) instead. */
 @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&family=JetBrains+Mono:wght@400;600&display=swap');
 
-:root {
+.comic {
   --ink: #1f2430;
   --paper: #fffdf6;
   --bub: #ffffff;
-  --bg: #f4efe3;
+  --cbg: #f4efe3;
   --mute: #7a8090;
   --c1: #6ea8fe;
   --c2: #ffb457;
@@ -23,26 +26,22 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #f4efe3;
-    --paper: #2a2f3d;
-    --bub: #3a4156;
-    --bg: #1a1d27;
-    --mute: #9aa0b0;
-    --code-bg: #14161d;
+  .comic:not([data-theme]):not(.light) {
+    --ink: #f4efe3; --paper: #2a2f3d; --bub: #3a4156; --cbg: #1a1d27;
+    --mute: #9aa0b0; --code-bg: #14161d;
   }
+}
+.comic.dark,
+html:not(.light) .comic[data-theme="site"] {
+  --ink: #f4efe3; --paper: #2a2f3d; --bub: #3a4156; --cbg: #1a1d27;
+  --mute: #9aa0b0; --code-bg: #14161d;
 }
 
 /* ---------- base ---------- */
-.comic {
-  font: 1.15rem/1.45 var(--hand);
-  color: var(--ink);
-  background: var(--bg);
-  margin: 0;
-  padding: 1.5rem 1rem 3rem;
-}
+.comic { font: 1.15rem/1.45 var(--hand); color: var(--ink); }
+body.comic { background: var(--cbg); margin: 0; padding: 1.5rem 1rem 3rem; }
 .comic .page { max-width: 62rem; margin: 0 auto; }
-.comic h1 { font: 2.4rem var(--hand); margin: 0 0 .2rem; }
+.comic h1 { font: 2.4rem var(--hand); letter-spacing: 0; margin: 0 0 .2rem; }
 .comic .sub { color: var(--mute); margin: 0 0 1.5rem; }
 
 /* ---------- strip + panel ---------- */
@@ -55,8 +54,13 @@
 .panel {
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding: 1rem 1.1rem 1.1rem;
   transform: rotate(var(--tilt, 0deg));
+  /* reset: host sites may style .panel */
+  border: 0; border-radius: 0; background: none; box-shadow: none;
 }
 .panel.wide { grid-column: 1 / -1; }
 .panel::before {
@@ -71,7 +75,7 @@
   filter: url(#wob);
 }
 .ph { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
-.ph h2 { flex-basis: 100%; font: 1.55rem var(--hand); margin: .2rem 0 .5rem; }
+.ph h2 { flex-basis: 100%; font: 1.55rem var(--hand); letter-spacing: 0; margin: .2rem 0 .5rem; }
 .num {
   display: grid; place-items: center;
   width: 2.2rem; height: 2.2rem;
@@ -81,7 +85,7 @@
   font-weight: 700;
   filter: url(#wob);
 }
-.tag { font: 600 .75rem var(--mono); letter-spacing: .1em; color: var(--mute); }
+.tag { font: 600 .75rem var(--mono); letter-spacing: .1em; color: var(--mute); margin: 0; }
 .panel.done .num { background: var(--good); color: #fff; }
 
 /* ---------- scene ---------- */
@@ -94,7 +98,9 @@
   margin: .5rem 0;
 }
 .who { display: flex; flex-direction: column; align-items: center; }
-.arrow { font: 700 2rem var(--hand); align-self: center; }
+.pair { display: flex; align-items: flex-end; gap: .6rem; flex-wrap: wrap; }
+.arrow { font: 700 2rem var(--hand); align-self: center; margin: 0; }
+.arrow.sm { font-size: 1rem; }
 
 /* ---------- characters ---------- */
 comic-char {
@@ -164,11 +170,14 @@ comic-char .lbl { font: 600 .8rem var(--mono); margin-top: -.3rem; }
   display: flex; flex-direction: column; align-items: center; gap: .2rem;
   text-align: center;
 }
+.frame b { font-size: 1.05rem; }
+.frame code { font: .78rem var(--mono); overflow-wrap: anywhere; }
 .frame small { font: 600 .75rem var(--mono); color: var(--mute); }
+.flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem; margin: .5rem 0; }
 
 /* ---------- timeline lanes ---------- */
 .lane { display: flex; align-items: center; gap: .3rem; margin: .3rem 0; }
-.lane b { width: 4.5rem; font: 600 .8rem var(--mono); }
+.lane b { width: 4.5rem; flex: none; font: 600 .8rem var(--mono); }
 .lane i {
   flex: var(--w, 1);
   min-width: 0;
@@ -182,6 +191,8 @@ comic-char .lbl { font: 600 .8rem var(--mono); margin-top: -.3rem; }
   white-space: nowrap;
 }
 .lane .run { background: var(--c5); }
+.lane .a { background: var(--c1); }
+.lane .b { background: var(--c3); }
 .lane .wait { background: var(--c6); border-style: dashed; }
 .lane .boom { background: var(--bad); }
 .lane .gap { border: 0; background: none; }
@@ -198,6 +209,7 @@ comic-char .lbl { font: 600 .8rem var(--mono); margin-top: -.3rem; }
 }
 .chip.on { background: var(--c5); }
 .chip.off { background: var(--c6); }
+.chip.p { background: var(--c3); }
 
 /* ---------- text helpers ---------- */
 .note {
@@ -206,7 +218,7 @@ comic-char .lbl { font: 600 .8rem var(--mono); margin-top: -.3rem; }
   border: 2.5px solid #1f2430;
   border-radius: 6px;
   padding: .5rem .8rem;
-  margin-top: .8rem;
+  margin: .8rem 0 0;
   transform: rotate(-.6deg);
   box-shadow: 3px 3px 0 rgba(0, 0, 0, .25);
 }
@@ -215,14 +227,23 @@ comic-char .lbl { font: 600 .8rem var(--mono); margin-top: -.3rem; }
   font: 600 .75rem var(--mono);
   text-transform: uppercase;
 }
+.note.warn { background: var(--c2); transform: rotate(.5deg); }
+.note.warn::before { content: "Careful · "; }
 .aside { font: 600 1.3rem var(--scrawl); color: var(--mute); transform: rotate(-1.5deg); margin: .5rem 0; }
 .aside::before { content: "✎ "; }
 .gray { color: var(--mute); opacity: .75; }
-.bad { color: var(--bad); font-weight: 700; }
-.good { color: var(--good); font-weight: 700; }
+.bad { color: var(--bad); font-weight: 700; margin: .4rem 0 0; }
+.good { color: var(--good); font-weight: 700; margin: .4rem 0 0; }
+
+/* collapsible detail: keeps panels short, keeps the precise wording */
+.more { margin-top: .6rem; }
+.more summary { cursor: pointer; font: 600 1.25rem var(--scrawl); color: var(--mute); }
+.more p, .more li { font-size: 1.02rem; margin: .4rem 0 0; }
+.more ul { margin: .3rem 0 0; padding-left: 1.2rem; }
 
 /* ---------- code ---------- */
 pre.code {
+  position: relative;
   background: var(--code-bg);
   color: var(--code-fg);
   font: .88rem/1.5 var(--mono);
@@ -232,19 +253,40 @@ pre.code {
   overflow: auto;
   margin: .7rem 0;
 }
+pre.code:has(.copy-code) { padding-bottom: 2.4rem; }
+pre.code code { font: inherit; white-space: pre; }
 pre.code .k { color: #ffb457; }
 pre.code .f { color: #6ea8fe; }
 pre.code .c { color: #8a8f9c; }
+.copy-code {
+  position: absolute; right: .5rem; bottom: .5rem;
+  font: .75rem var(--mono);
+  padding: .1rem .5rem;
+  border: 1.5px solid var(--code-fg);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--code-fg);
+  opacity: .8;
+  cursor: pointer;
+}
 
 /* ---------- progress ---------- */
-.learn {
+.learn, .panel-done {
+  align-self: flex-start;
+  margin-top: auto;
   font: inherit;
   cursor: pointer;
-  margin-top: .7rem;
   padding: .2rem .9rem;
   border: 2.5px solid var(--ink);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink);
 }
-.learn[aria-pressed="true"] { background: var(--good); color: #fff; }
+.panel > :has(+ .learn), .panel > :has(+ .panel-done) { margin-bottom: .8rem; }
+.learn[aria-pressed="true"], .panel-done[aria-pressed="true"] { background: var(--good); color: #fff; }
+
+@media print {
+  .panel { transform: none; break-inside: avoid; }
+  .panel::before { filter: none; box-shadow: none; }
+  .learn, .panel-done, .copy-code { display: none; }
+}
