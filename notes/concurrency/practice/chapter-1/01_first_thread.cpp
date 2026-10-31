@@ -12,8 +12,16 @@
 #include <iostream>
 #include <thread>
 
-void workerTask() {
+using namespace std;
+
+void workerTask1() {
     // TODO 1: print the required message
+    std::cout<<"Worker: Hello from first  thread\n";
+}
+
+void workerTask2() {
+    // TODO 1: print the required message
+    std::cout<<"Worker: Hello from second thread\n";
 }
 
 int main() {
@@ -22,7 +30,14 @@ int main() {
 
     // TODO 3: join the thread before main exits
     // Hint: worker.join();
-
-    std::cout << "Main: worker has finished\n";
+    
+    std::thread worker1(workerTask1);
+    std::thread worker2(workerTask2);
+    worker1.join();
+    std::cout<< "Main: first worker has finished\n";
+    worker2.join();
+    std::cout << "Main: workers have finished\n";
     return 0;
 }
+
+// Run: g++ -std=c++17 -pthread 01_first_thread.cpp -o 01_first_thread && ./01_first_thread

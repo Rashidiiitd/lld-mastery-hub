@@ -18,6 +18,16 @@ int main() {
     // Put a loop inside the lambda to print steps 1 through 3.
 
     // TODO: join worker
+
+    std::thread worker([]
+    {
+        for(int i=1; i<=3; ++i)
+        {
+            std::cout << "Worker: step " << i << std::endl;
+        }
+    });
+    worker.join();
+
     std::cout << "Main: all steps completed\n";
     return 0;
 }

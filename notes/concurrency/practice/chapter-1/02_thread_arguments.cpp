@@ -11,8 +11,13 @@
 #include <iostream>
 #include <thread>
 
+using namespace std;
+
 void printNumber(int n) {
     // TODO: print "Worker received: " followed by n
+
+    cout<<"Worker received: " << n << endl;
+
 }
 
 int main() {
@@ -20,7 +25,8 @@ int main() {
     // Hint: std::thread worker(printNumber, 42);
 
     // TODO: join worker
-
+    thread worker(printNumber, 42);
+    worker.join();
     std::cout << "Main: done\n";
     return 0;
 }

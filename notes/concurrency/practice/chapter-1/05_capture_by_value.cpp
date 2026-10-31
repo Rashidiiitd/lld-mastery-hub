@@ -19,5 +19,9 @@ int main() {
     // Hint: [message] { ... }
 
     // TODO: join worker
+    std::thread worker([message] {
+        std::cout << message << std::endl;
+    });
+    worker.join();
     return 0;
 }

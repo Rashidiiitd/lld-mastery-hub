@@ -1,19 +1,26 @@
-# Chapter 1 — Hands-on Practice
+## What I learned in this chapter
 
-Beginner-friendly C++ thread exercises. Implement the TODOs; do not change the driver unless the problem asks you to.
+### Creating a thread
 
-## How to practice
-1. Open an exercise in GitHub's VS Code editor using the links on the practice page.
-2. Implement only the TODO section.
-3. Compile with: `g++ -std=c++17 -pthread exercise.cpp -o exercise`
-4. Run it and compare the output with the expected behavior (thread output order may vary).
-5. Try explaining each line before moving on.
+Create a thread with `std::thread`, passing it a callable and any arguments:
 
-Exercises:
-- 01 — Start your first worker thread
-- 02 — Pass arguments to a thread
-- 03 — Use a lambda as the thread task
-- 04 — Join two threads
-- 05 — Capture a value safely and understand lifetime
+```cpp
+std::thread threadName(function, argument);
+```
 
-The driver code is intentionally included in each file. You implement the marked function or expression.
+The argument is optional. Call `join()` to wait fo rthe thread to finish:
+
+```cpp
+threadName.join();
+```
+
+Joining does not destroy the thread object. A joinable `std::thread` must be
+joined or detached before its object is destroyed.
+
+Threads can also run a lambda:
+
+```cpp
+std::thread threadName([capture] {
+    // Function body
+});
+```
