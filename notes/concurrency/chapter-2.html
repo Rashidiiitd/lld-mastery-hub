@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Beginner-friendly C++ race conditions and synchronization comic notes."><title>Chapter 2 — Race Conditions & Synchronization | LLD Mastery Hub</title><link rel="stylesheet" href="../../styles.css?v=12"><link rel="stylesheet" href="../../comic/comic.css?v=2"><link rel="stylesheet" href="comic-notes.css?v=2"><script src="../../theme.js?v=1" defer></script><script src="../../comic/comic.js?v=1" defer></script><script src="chapter-2.js?v=1" defer></script></head>
+<body class="comic-notes-page"><a class="skip-link" href="#main">Skip to content</a><header class="topbar"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><nav class="topnav" aria-label="Main navigation"><a href="../../lld.html">LLD</a><a href="../../cpp-interview.html">C++ Interviews</a><a href="../../resources.html">Resources</a></nav><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme">☼</button></header>
+<main id="main" class="comic-main">
+<section class="comic-hero"><div><p class="eyebrow">C++ CONCURRENCY · CHAPTER 02</p><h1>Race Conditions<br><span class="gradient-text">&amp; Synchronization</span></h1><p class="comic-lede">Beginner-friendly notes: why shared data breaks, how locks protect it, and how to design thread-safe classes.</p><div class="comic-meta"><span>12 comic panels</span><span>·</span><span>First principles</span><span>·</span><span>C++11 → C++20</span></div><div class="comic-actions"><a class="button secondary" href="chapter-1.html">← Chapter 1</a><button class="button primary" id="mark-chapter" type="button">Mark chapter complete ✓</button></div></div><aside class="chapter-progress"><div class="progress-head"><strong>Your progress</strong><span id="progress-label">0 / 12 panels</span></div><div class="progress-track"><span id="chapter-progress-bar"></span></div><p class="muted small">Mark a panel learned when you can explain the idea and code aloud.</p></aside></section>
+<div class="comic" data-theme="site"><div class="strip">
+<article class="panel" data-panel="1"><header class="ph"><span class="num">01</span><span class="tag">INTUITION</span><h2>What is a race condition?</h2></header><div class="scene"><div class="who"><p class="bubble">I read count = 10</p><comic-char name="worker" label="Thread A" size="s"></comic-char></div><div class="who"><p class="bubble r">I also read count = 10</p><comic-char name="worker" label="Thread B" flip size="s"></comic-char></div></div><div class="room" data-label="SHARED MEMORY"><p><b>count = 10</b></p><p>A computes 10 + 1 → 11</p><p>B computes 10 + 1 → 11</p><p>Both write 11 → expected 12, got 11!</p></div><p class="note">A race condition happens when the result depends on the unpredictable timing/order of threads accessing shared state.</p><details class="more"><summary>Why did this happen?</summary><p>count++ is not one indivisible action. It usually means load the value, add one, then store it. The threads can interleave those steps.</p></details><button class="panel-done" data-complete="1">Mark panel learned</button></article>
+<article class="panel" data-panel="2"><header class="ph"><span class="num">02</span><span class="tag">CRITICAL SECTION</span><h2>Find the dangerous region</h2></header><div class="scene"><div class="who"><p class="bubble">Only one thread at a time, please!</p><comic-char name="mutex" label="shared resource" size="s"></comic-char></div></div><pre class="code"><code>++count; // read-modify-write
+// critical section: touches shared state</code></pre><p>A <b>critical section</b> is code that accesses shared data and must obey a coordination rule.</p><div class="flow"><span class="chip">Enter</span><span class="arrow sm">→</span><span class="chip on">Critical section</span><span class="arrow sm">→</span><span class="chip">Exit</span></div><p class="note">The goal is not “make everything single-threaded”; it is protect only the operations that need protection.</p><button class="panel-done" data-complete="2">Mark panel learned</button></article>
+<article class="panel" data-panel="3"><header class="ph"><span class="num">03</span><span class="tag">MUTEX</span><h2>Mutual exclusion with std::mutex</h2></header><div class="scene"><div class="who"><p class="bubble">I own the lock now.</p><comic-char name="worker" size="s" label="Thread A"></comic-char></div><div class="who"><p class="bubble r">I'll wait until it's free.</p><comic-char name="worker" flip size="s" label="Thread B"></comic-char></div></div><pre class="code"><code>#include &lt;mutex&gt;
+std::mutex m;
+int count = 0;
+
+void increment() {
+    m.lock();
+    ++count;
+    m.unlock();
+}</code></pre><p>Only one thread can own a mutex at a time. Other threads trying to lock it wait.</p><p class="note warn">Manual unlock is fragile: an early return or exception can leave the mutex locked.</p><button class="panel-done" data-complete="3">Mark panel learned</button></article>
+<article class="panel" data-panel="4"><header class="ph"><span class="num">04</span><span class="tag">RAII</span><h2>std::lock_guard — lock and unlock automatically</h2></header><div class="scene"><div class="who"><p class="bubble">Constructor locks. Destructor unlocks.</p><comic-char name="mutex" size="s" label="lock_guard"></comic-char></div></div><pre class="code"><code>std::mutex m;
+int count = 0;
+
+void increment() {
+    std::lock_guard&lt;std::mutex&gt; lock(m);
+    ++count;
+} // lock releases here</code></pre><p><code>lock_guard</code> uses RAII: the lock's lifetime follows the object's scope, even if the function returns early or throws.</p><p class="note">Default choice for a simple “lock this mutex for this scope” situation.</p><button class="panel-done" data-complete="4">Mark panel learned</button></article>
+<article class="panel" data-panel="5"><header class="ph"><span class="num">05</span><span class="tag">FLEXIBLE LOCKING</span><h2>std::unique_lock</h2></header><div class="scene"><div class="who"><p class="bubble">I can lock now, later, unlock, and relock.</p><comic-char name="mutex" mood="think" size="s" label="unique_lock"></comic-char></div></div><pre class="code"><code>std::unique_lock&lt;std::mutex&gt; lock(m, std::defer_lock);
+// do work that doesn't need the lock
+lock.lock();
+update_shared_state();
+lock.unlock();
+// more independent work</code></pre><p><code>unique_lock</code> is more flexible than <code>lock_guard</code>. It can be deferred, manually unlocked/relocked, moved, and used with condition variables.</p><p class="note">Use it when you need those features; otherwise lock_guard is simpler.</p><button class="panel-done" data-complete="5">Mark panel learned</button></article>
+<article class="panel" data-panel="6"><header class="ph"><span class="num">06</span><span class="tag">MULTIPLE LOCKS</span><h2>std::scoped_lock — lock more than one mutex safely</h2></header><div class="scene"><div class="who"><p class="bubble">A locks X, then waits for Y.</p><comic-char name="worker" size="s" label="Thread A"></comic-char></div><div class="who"><p class="bubble r">B locks Y, then waits for X.</p><comic-char name="worker" flip size="s" label="Thread B"></comic-char></div></div><p class="note warn">Deadlock: each thread holds one lock and waits forever for the other.</p><pre class="code"><code>std::mutex x, y;
+
+void transfer() {
+    std::scoped_lock lock(x, y);
+    // safely use both protected resources
+}</code></pre><p><code>scoped_lock</code> (C++17) acquires multiple mutexes using a deadlock-avoidance algorithm and releases them at scope exit.</p><p class="note">When you need multiple mutexes together, prefer scoped_lock over hand-written lock ordering.</p><button class="panel-done" data-complete="6">Mark panel learned</button></article>
+<article class="panel" data-panel="7"><header class="ph"><span class="num">07</span><span class="tag">READERS &amp; WRITERS</span><h2>std::shared_mutex and std::shared_lock</h2></header><div class="scene"><div class="who"><p class="bubble">Many readers can enter together.</p><comic-char name="worker" size="s" label="Readers"></comic-char></div><div class="who"><p class="bubble r">A writer needs exclusive access.</p><comic-char name="mutex" size="s" label="Writer"></comic-char></div></div><pre class="code"><code>#include &lt;shared_mutex&gt;
+std::shared_mutex m;
+int value = 0;
+
+int read() {
+    std::shared_lock lock(m); // shared/read lock
+    return value;
+}
+void write(int v) {
+    std::unique_lock lock(m); // exclusive/write lock
+    value = v;
+}</code></pre><p>Multiple shared locks can coexist. A unique lock excludes readers and other writers. Use when reads are frequent and writes are less frequent.</p><p class="note warn">It may not improve performance for tiny/contended data; fairness/starvation behavior depends on implementation.</p><button class="panel-done" data-complete="7">Mark panel learned</button></article>
+<article class="panel" data-panel="8"><header class="ph"><span class="num">08</span><span class="tag">SPECIAL CASE</span><h2>std::recursive_mutex</h2></header><div class="scene"><div class="who"><p class="bubble">Same thread can lock me repeatedly.</p><comic-char name="mutex" mood="think" size="s" label="recursive_mutex"></comic-char></div></div><pre class="code"><code>std::recursive_mutex m;
+void outer() {
+    std::lock_guard lock(m);
+    inner(); // inner locks m again
+}
+void inner() {
+    std::lock_guard lock(m);
+    // ...
+}</code></pre><p>Useful when a locked function calls another function that also locks the same mutex, in the same thread.</p><p class="note warn">Often hides unclear lock ownership or tangled call paths. Prefer redesigning private “already locked” helpers when practical.</p><button class="panel-done" data-complete="8">Mark panel learned</button></article>
+<article class="panel" data-panel="9"><header class="ph"><span class="num">09</span><span class="tag">TRY / TIMEOUT</span><h2>std::timed_mutex and try_lock()</h2></header><div class="scene"><div class="who"><p class="bubble">Try me; don't wait forever.</p><comic-char name="mutex" mood="think" size="s" label="timed_mutex"></comic-char></div></div><pre class="code"><code>std::timed_mutex m;
+if (m.try_lock()) {
+    // protected work
+    m.unlock();
+} else {
+    // busy: skip, retry, or report
+}</code></pre><p><code>try_lock()</code> returns immediately with success/failure. A timed mutex also supports waiting up to a deadline/duration.</p><p class="note warn">Failure is not permission to touch shared data. Decide what the program should do when the lock is busy.</p><button class="panel-done" data-complete="9">Mark panel learned</button></article>
+<article class="panel" data-panel="10"><header class="ph"><span class="num">10</span><span class="tag">DESIGN TRADE-OFF</span><h2>Coarse vs fine-grained locking</h2></header><div class="frames"><div class="frame"><b>Coarse</b><code>one mutex for whole object</code><small>simple, less parallelism</small></div><div class="frame"><b>Fine</b><code>separate mutexes per resource</code><small>more parallelism, more complexity</small></div></div><p>Start coarse-grained for correctness. Split locks only when profiling shows contention and you can define lock ownership/order clearly.</p><p class="note">More locks mean more chances for deadlocks and inconsistent multi-lock operations.</p><button class="panel-done" data-complete="10">Mark panel learned</button></article>
+<article class="panel" data-panel="11"><header class="ph"><span class="num">11</span><span class="tag">CLASS DESIGN</span><h2>Thread-safe class and invariants</h2></header><div class="scene"><div class="who"><p class="bubble">Keep my data valid as one unit.</p><comic-char name="mutex" size="s" label="class invariant"></comic-char></div></div><pre class="code"><code>class BankAccount {
+    mutable std::mutex m;
+    int balance = 0;
+public:
+    void deposit(int amount) {
+        std::lock_guard lock(m);
+        balance += amount;
+    }
+    bool withdraw(int amount) {
+        std::lock_guard lock(m);
+        if (balance &lt; amount) return false;
+        balance -= amount;
+        return true;
+    }
+};</code></pre><p>An <b>invariant</b> is a rule that must always hold, e.g. balance ≥ 0. Protect the whole check-and-update operation, not just individual lines.</p><p class="note">Keep the mutex private. Public methods should preserve the class's invariant under concurrent calls.</p><button class="panel-done" data-complete="11">Mark panel learned</button></article>
+<article class="panel" data-panel="12"><header class="ph"><span class="num">12</span><span class="tag">INTERVIEW DISTINCTIONS</span><h2>Thread safety vs reentrancy</h2></header><div class="frames"><div class="frame"><b>Thread-safe</b><small>Concurrent calls are safe when used as documented.</small></div><div class="frame"><b>Reentrant</b><small>Can be safely entered again before a previous call finishes, including nested/signal-like contexts depending on definition.</small></div></div><p>A function can be thread-safe using a mutex but not reentrant if it deadlocks when called recursively or from a callback while the lock is held.</p><p class="note">Thread safety is about concurrent access; reentrancy is about safely overlapping/nesting executions of the same code.</p><details class="more"><summary>Simple checklist for LLD rounds</summary><ul><li>What data is shared?</li><li>What invariant must stay true?</li><li>Which exact operations form the critical section?</li><li>Who owns/acquires/releases each lock?</li><li>Can any path deadlock or call out while holding a lock?</li><li>Can we begin with one mutex and optimize later?</li></ul></details><button class="panel-done" data-complete="12">Mark panel learned</button></article>
+</div></div>
+<section class="chapter-recap"><div><p class="eyebrow">CHAPTER CHECKPOINT</p><h2>Explain these in your own words</h2><p class="muted">Try answering aloud before revealing the short answer.</p></div><div class="recap-questions"><details><summary>Why is count++ not automatically safe?</summary><p>It is a read-modify-write sequence; two threads can read the same old value and overwrite each other's update.</p></details><details><summary>Why prefer lock_guard?</summary><p>It releases the mutex automatically at scope exit, including early returns and exceptions.</p></details><details><summary>When do I need unique_lock?</summary><p>When you need deferred locking, manual unlock/relock, moving ownership, or condition-variable support.</p></details><details><summary>How do I protect two variables that must agree?</summary><p>Protect the complete invariant-changing operation under the same lock, not each variable independently.</p></details><details><summary>What is a good first thread-safe class design?</summary><p>Keep shared state private, use one private mutex, and make each public operation preserve the class invariant.</p></details></div><div class="chapter-footer-actions"><a class="button secondary" href="chapter-1.html">Chapter 1</a><button class="button primary" id="mark-chapter-bottom" type="button">Mark all panels learned ✓</button></div></section>
+<footer class="footer"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><p>Learn the idea. Draw the flow. Implement it in C++.</p><a href="https://github.com/Rashidiiitd/lld-mastery-hub" target="_blank" rel="noreferrer">View source ↗</a></footer></main></body></html>
