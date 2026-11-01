@@ -1,0 +1,168 @@
+/* patterns.css — design-pattern add-on for the comic kit.
+   Load AFTER comic.css (needs its tokens), together with comic.js + patterns.js.
+
+   Pattern panel  : <article class="panel wide"> .ph  .intent  .pat-grid > .beat.problem|.fix|.uml-b|.code|.cost  .note.ask
+   Class boxes    : .uml(.iface|.abs .c1-.c6) > h4(.st) + ul (attributes) + ul (methods)
+   Diagrams       : .uml-tree > box, <comic-rel>, .uml-kids > .uml-kid ;  .uml-row
+   Before / after : .versus > .before + .after
+   Trade-offs     : ul.checks > li.y | li.n
+   Extras         : .pmap (pattern map), .key (arrow legend), .beat.span, .note.ask, .scene.tight (3-step scene on one row) */
+
+/* ---------- intent line ---------- */
+.intent {
+  font: 600 1.6rem/1.2 var(--scrawl);
+  margin: .1rem 0 .8rem;
+}
+.intent::before {
+  content: "INTENT ▸ ";
+  font: 600 .75rem var(--mono);
+  letter-spacing: .1em;
+  color: var(--mute);
+}
+.intent b { text-decoration: underline wavy var(--c4) 2px; text-underline-offset: 5px; }
+
+/* ---------- beats: problem / approach / structure / code / trade-off ---------- */
+.pat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: 1rem 1.6rem;
+}
+.beat {
+  --bc: var(--ink);
+  position: relative;
+  min-width: 0;
+  padding: .1rem 0 .2rem .8rem;
+  border-left: 5px solid var(--bc);
+}
+.beat.span { grid-column: 1 / -1; }
+.beat::before {
+  display: inline-block;
+  margin-bottom: .35rem;
+  padding: 0 .45rem;
+  border-radius: 4px;
+  background: var(--bc);
+  color: #1f2430;
+  font: 600 .72rem var(--mono);
+  letter-spacing: .1em;
+}
+.beat > p { margin: .4rem 0 0; }
+.beat.problem { --bc: var(--bad); }
+.beat.problem::before { content: "THE PROBLEM"; }
+.beat.fix { --bc: var(--good); }
+.beat.fix::before { content: "THE APPROACH"; }
+.beat.uml-b { --bc: var(--c3); }
+.beat.uml-b::before { content: "STRUCTURE"; }
+.beat.code { --bc: var(--c1); }
+.beat.code::before { content: "C++ SKETCH"; }
+.beat.cost { --bc: var(--c2); }
+.beat.cost::before { content: "TRADE-OFFS"; }
+.beat[data-label]::before { content: attr(data-label); }
+.beat pre.code { margin: .2rem 0 0; }
+.beat.cost { order: 1; }
+.beat.code { order: 2; grid-column: 1 / -1; }
+.pat-grid .bubble { max-width: 10.5rem; }
+.pat-grid .scene { gap: .4rem; }
+.pat-grid .arrow { font-size: 1.5rem; }
+.scene.tight { flex-wrap: nowrap; justify-content: space-between; }
+.scene.tight .who { min-width: 0; }
+.scene.tight .bubble { max-width: 6.5rem; }
+@media (max-width: 32rem) { .scene.tight { flex-wrap: wrap; justify-content: space-around; } }
+
+/* ---------- before / after ---------- */
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: .5rem 0; }
+.versus > * {
+  min-width: 0;
+  padding: .4rem .5rem .5rem;
+  border: 2.5px dashed var(--bad);
+  border-radius: 10px;
+  background: var(--bub);
+}
+.versus > .after { border-style: solid; border-color: var(--good); }
+.versus h5 { margin: 0 0 .3rem; font: 600 .72rem var(--mono); letter-spacing: .1em; color: var(--mute); }
+.versus .flow { justify-content: flex-start; }
+.versus .room::before { background: var(--bub); }
+@media (max-width: 32rem) { .versus { grid-template-columns: 1fr; } }
+
+/* ---------- trade-off checklist ---------- */
+.checks { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .35rem; }
+.checks li { display: flex; align-items: flex-start; gap: .5rem; font-size: 1.05rem; line-height: 1.3; }
+.checks li::before {
+  flex: none;
+  display: grid; place-items: center;
+  width: 1.3rem; height: 1.3rem;
+  margin-top: .05rem;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  color: #1f2430;
+  font: 700 .8rem/1 var(--mono);
+}
+.checks .y::before { content: "✓"; background: var(--good); }
+.checks .n::before { content: "✕"; background: var(--bad); }
+
+.note.ask { background: var(--c3); margin-top: 1rem; }
+.note.ask::before { content: "Interview · "; }
+
+/* ---------- UML class boxes ---------- */
+.uml {
+  --hc: var(--c6);
+  display: inline-block;
+  min-width: 7.5rem;
+  overflow: hidden;
+  background: var(--bub);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--ink);
+  text-align: left;
+}
+.uml h4 {
+  margin: 0;
+  padding: .25rem .6rem;
+  background: var(--hc);
+  color: #1f2430;
+  border-bottom: 2.5px solid var(--ink);
+  font: 700 .95rem/1.25 var(--mono);
+  text-align: center;
+}
+.uml h4 .st { display: block; font-weight: 400; font-size: .7rem; }
+.uml.abs h4 { font-style: italic; }
+.uml ul { list-style: none; margin: 0; padding: .25rem .6rem; }
+.uml ul + ul { border-top: 2px solid var(--ink); }
+.uml li { white-space: nowrap; font: .8rem/1.4 var(--mono); }
+.uml li.gray { opacity: .6; }
+.uml.c1 { --hc: var(--c1); } .uml.c2 { --hc: var(--c2); } .uml.c3 { --hc: var(--c3); }
+.uml.c4 { --hc: var(--c4); } .uml.c5 { --hc: var(--c5); } .uml.c6 { --hc: var(--c6); }
+
+/* ---------- diagram layout ---------- */
+.uml-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .6rem; margin: .5rem 0; }
+.uml-row.top { align-items: flex-start; }
+.uml-tree { display: flex; flex-direction: column; align-items: center; }
+.uml-kids { display: flex; justify-content: center; }
+.uml-kid { position: relative; padding: .9rem .4rem 0; }
+.uml-kid::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: 3px solid var(--ink); }
+.uml-kid::after { content: ""; position: absolute; top: 0; left: 50%; height: .9rem; border-left: 3px solid var(--ink); transform: translateX(-1.5px); }
+.uml-kid:first-child::before { left: 50%; }
+.uml-kid:last-child::before { right: 50%; }
+.uml-kid:only-child::before { display: none; }
+
+comic-rel { display: inline-flex; flex-direction: column; align-items: center; color: var(--ink); line-height: 1; }
+comic-rel svg { display: block; overflow: visible; }
+comic-rel .lbl { margin-top: .2rem; font: 600 .72rem var(--mono); color: var(--mute); }
+comic-rel[dir="up"], comic-rel[dir="down"] { flex-direction: row; gap: .5rem; }
+comic-rel[dir="up"] .lbl, comic-rel[dir="down"] .lbl { margin: 0; }
+
+/* ---------- arrow legend ---------- */
+.key-title { margin: 1.4rem 0 .4rem; }
+.key { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .5rem .9rem; margin: .5rem 0; }
+.key > div { display: flex; align-items: center; gap: .7rem; font-size: 1.02rem; line-height: 1.2; }
+.key comic-rel { flex: none; }
+
+/* ---------- pattern map ---------- */
+.pmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 1.4rem; }
+.pgroup h3 { margin: 0 0 .4rem; font: 700 1.25rem var(--hand); }
+.pgroup ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.pgroup li { display: flex; align-items: baseline; gap: .5rem; font-size: 1rem; line-height: 1.25; }
+.pgroup li .chip { flex: none; white-space: nowrap; }
+.pgroup.cre .chip { background: var(--c2); }
+.pgroup.str .chip { background: var(--c1); }
+.pgroup.beh .chip { background: var(--c3); }

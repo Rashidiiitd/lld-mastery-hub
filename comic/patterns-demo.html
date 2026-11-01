@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Patterns Comic Kit Demo</title>
+<link rel="stylesheet" href="comic.css">
+<link rel="stylesheet" href="patterns.css">
+<script src="comic.js" defer></script>
+<script src="patterns.js" defer></script>
+</head>
+<body class="comic">
+<main class="page">
+
+  <h1>Design Patterns</h1>
+  <p class="sub">Pattern comic kit demo · <span data-progress></span></p>
+
+  <!-- CAST + KEY -->
+  <section class="strip">
+    <article class="panel wide" style="--tilt:-.2deg">
+      <header class="ph"><span class="tag">THE CAST</span><h2>Meet the pattern characters</h2></header>
+      <div class="scene">
+        <comic-char name="client" label="client"></comic-char>
+        <comic-char name="factory" label="factory"></comic-char>
+        <comic-char name="product" label="product"></comic-char>
+        <comic-char name="publisher" label="publisher"></comic-char>
+        <comic-char name="subscriber" label="subscriber"></comic-char>
+        <comic-char name="wrapper" label="wrapper"></comic-char>
+        <comic-char name="adapter" label="adapter"></comic-char>
+        <comic-char name="king" label="singleton"></comic-char>
+      </div>
+      <p class="aside">plus the thread-chapter cast: main, worker, scheduler, mutex, cpu, os</p>
+      <p class="tag key-title">READING THE ARROWS · tail → head, the head is the target</p>
+      <div class="key">
+        <div><comic-rel kind="inherit" dir="right"></comic-rel>extends (is-a)</div>
+        <div><comic-rel kind="implement" dir="right"></comic-rel>implements an interface</div>
+        <div><comic-rel kind="assoc" dir="right"></comic-rel>has a / uses</div>
+        <div><comic-rel kind="depend" dir="right"></comic-rel>depends briefly (creates, takes as parameter)</div>
+        <div><comic-rel kind="aggregate" dir="right"></comic-rel>owner has parts that can live on their own</div>
+        <div><comic-rel kind="compose" dir="right"></comic-rel>owner has parts that die with it</div>
+      </div>
+    </article>
+
+    <article class="panel wide" style="--tilt:.2deg">
+      <header class="ph"><span class="tag">THE MAP</span><h2>Pick the family first</h2></header>
+      <div class="pmap">
+        <div class="pgroup cre"><h3>Creational · how objects get made</h3><ul>
+          <li><span class="chip">Simple Factory</span>one function picks the concrete type</li>
+          <li><span class="chip">Factory Method</span>a subclass decides which product to create</li>
+          <li><span class="chip">Abstract Factory</span>create whole families of related products</li>
+          <li><span class="chip">Builder</span>assemble a complex object step by step</li>
+          <li><span class="chip">Prototype</span>create new objects by cloning an existing one</li>
+        </ul></div>
+        <div class="pgroup str"><h3>Structural · how objects fit together</h3><ul>
+          <li><span class="chip">Decorator</span>add behavior by wrapping an object behind the same interface</li>
+        </ul></div>
+        <div class="pgroup beh"><h3>Behavioral · how objects cooperate</h3><ul>
+          <li><span class="chip">Strategy</span>make an algorithm interchangeable behind a stable interface</li>
+          <li><span class="chip">Observer</span>notify interested subscribers when a subject changes</li>
+        </ul></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="strip">
+
+    <!-- STRATEGY -->
+    <article class="panel wide" data-id="strategy" style="--tilt:-.2deg">
+      <header class="ph"><span class="num">⇄</span><span class="tag">BEHAVIORAL</span><h2>Strategy</h2></header>
+      <p class="intent">Make an algorithm <b>interchangeable</b> behind a stable interface.</p>
+      <div class="pat-grid">
+
+        <section class="beat problem">
+          <div class="scene">
+            <div class="who"><p class="bubble thought">if (SALE) … else if (VIP) … else if (COUPON) …</p><comic-char name="client" mood="sad" size="s" label="Cart"></comic-char></div>
+          </div>
+          <p>A class grows conditionals for multiple ways to perform the same task.</p>
+        </section>
+
+        <section class="beat fix">
+          <div class="scene">
+            <div class="who"><p class="bubble">Price me!</p><comic-char name="client" size="s" label="Cart"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble r">Sale: 20% off.</p><comic-char name="worker" size="s" flip label="Sale"></comic-char></div>
+          </div>
+          <p class="aside">swap it at runtime, Cart never changes</p>
+          <p>Encapsulate each algorithm and inject or select the desired strategy.</p>
+        </section>
+
+        <section class="beat uml-b">
+          <div class="uml-tree">
+            <div class="uml c1"><h4>Cart</h4><ul><li>- s: PricingStrategy</li></ul><ul><li>+ total(base)</li></ul></div>
+            <comic-rel kind="assoc" dir="down" len="44" label="uses"></comic-rel>
+            <div class="uml iface abs c3"><h4><span class="st">«interface»</span>PricingStrategy</h4><ul><li>+ price(base)</li></ul></div>
+            <comic-rel kind="implement" dir="up" len="44"></comic-rel>
+            <div class="uml-kids">
+              <div class="uml-kid"><div class="uml c5"><h4>Regular</h4><ul><li>+ price(base)</li></ul></div></div>
+              <div class="uml-kid"><div class="uml c5"><h4>Sale</h4><ul><li>+ price(base)</li></ul></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="beat code">
+<pre class="code"><code>struct PricingStrategy {
+  virtual double price(double base) const = 0;
+  virtual ~PricingStrategy() = default;
+};
+struct Regular : PricingStrategy {
+  double price(double b) const override { return b; }
+};
+struct Sale : PricingStrategy {
+  double price(double b) const override { return b * 0.8; }
+};
+class Cart {
+  std::unique_ptr&lt;PricingStrategy&gt; s;
+public:
+  explicit Cart(std::unique_ptr&lt;PricingStrategy&gt; p) : s(std::move(p)) {}
+  double total(double base) const { return s-&gt;price(base); }
+};</code></pre>
+        </section>
+
+        <section class="beat cost">
+          <ul class="checks">
+            <li class="y">Easy to extend and test; no more growing if/else chain.</li>
+            <li class="n">Can add many small types if overused.</li>
+            <li class="n">The caller must still know which strategy to pick.</li>
+          </ul>
+        </section>
+      </div>
+      <p class="note ask">How can templates or std::function be alternatives?</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- OBSERVER -->
+    <article class="panel wide" data-id="observer" style="--tilt:.2deg">
+      <header class="ph"><span class="num">◎</span><span class="tag">BEHAVIORAL</span><h2>Observer</h2></header>
+      <p class="intent">Notify interested subscribers when a subject <b>changes</b>, without knowing who they are.</p>
+      <div class="pat-grid">
+
+        <section class="beat problem">
+          <div class="scene">
+            <div class="who"><p class="bubble thought">I call EmailAlert, SmsAlert and AuditLog by name. New listener = edit me.</p><comic-char name="publisher" mood="sad" size="s" label="Order"></comic-char></div>
+          </div>
+          <p>A publisher should not need hard-coded knowledge of every consumer.</p>
+        </section>
+
+        <section class="beat fix">
+          <div class="scene">
+            <div class="who"><p class="bubble shout">Order shipped!</p><comic-char name="publisher" mood="shock" size="s" label="Subject"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble r">Got it!</p><comic-char name="subscriber" size="s" flip label="Email"></comic-char></div>
+            <div class="who"><p class="bubble r">Logged.</p><comic-char name="subscriber" size="s" flip label="Audit"></comic-char></div>
+          </div>
+          <p>Keep subscriptions and publish events through a clear contract; define unsubscribe and lifetime behavior.</p>
+        </section>
+
+        <section class="beat uml-b">
+          <div class="uml-tree">
+            <div class="uml c2"><h4>Subject</h4><ul><li>- subs: map&lt;int, Callback&gt;</li></ul><ul><li>+ subscribe(cb): int</li><li>+ unsubscribe(id)</li><li>+ publish(e)</li></ul></div>
+            <comic-rel kind="aggregate" dir="down" len="44" label="notifies"></comic-rel>
+            <div class="uml iface abs c3"><h4><span class="st">«std::function»</span>Callback</h4><ul><li>+ operator()(Event)</li></ul></div>
+            <comic-rel kind="implement" dir="up" len="44"></comic-rel>
+            <div class="uml-kids">
+              <div class="uml-kid"><div class="uml c5"><h4>EmailAlert</h4></div></div>
+              <div class="uml-kid"><div class="uml c5"><h4>AuditLog</h4></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="beat code">
+<pre class="code"><code>using Callback = std::function&lt;void(const Event&amp;)&gt;;
+class Subject {
+  std::map&lt;int, Callback&gt; subs;
+  int next = 0;
+public:
+  int subscribe(Callback cb) { subs[next] = std::move(cb); return next++; }
+  void unsubscribe(int id) { subs.erase(id); }
+  void publish(const Event&amp; e) {
+    auto copy = subs;  // callbacks may unsubscribe while we loop
+    for (auto&amp; kv : copy) kv.second(e);
+  }
+};</code></pre>
+        </section>
+
+        <section class="beat cost">
+          <ul class="checks">
+            <li class="y">Decouples components: the subject never names its consumers.</li>
+            <li class="n">Event ordering, lifetime, and re-entrancy need care.</li>
+            <li class="n">Dangling callbacks and thread-safety bugs are easy to introduce.</li>
+          </ul>
+        </section>
+      </div>
+      <p class="note ask">How do you avoid dangling callbacks and thread-safety bugs?</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- DECORATOR -->
+    <article class="panel wide" data-id="decorator" style="--tilt:-.2deg">
+      <header class="ph"><span class="num">◌</span><span class="tag">STRUCTURAL</span><h2>Decorator</h2></header>
+      <p class="intent">Add behavior by <b>wrapping</b> an object behind the same interface.</p>
+      <div class="pat-grid">
+
+        <section class="beat problem">
+          <div class="scene">
+            <div class="who"><p class="bubble thought">EmailLog, EmailSms, EmailSmsLog… every new option doubles the classes!</p><comic-char name="client" mood="shock" size="s" label="client"></comic-char></div>
+          </div>
+          <p>Inheritance combinations multiply when optional features can be mixed.</p>
+        </section>
+
+        <section class="beat fix">
+          <div class="scene">
+            <div class="who"><p class="bubble">I add one thing, then pass it on.</p><comic-char name="wrapper" size="s" label="Logging"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble r">send()</p><comic-char name="worker" size="s" flip label="Email"></comic-char></div>
+          </div>
+          <div class="versus">
+            <div class="before"><h5>BEFORE</h5><div class="flow"><span class="chip">Email</span><span class="chip">EmailLog</span><span class="chip">EmailSms</span><span class="chip">EmailSmsLog</span></div></div>
+            <div class="after"><h5>AFTER</h5><div class="room" data-label="Logging"><div class="room" data-label="Sms"><div class="flow"><span class="chip on">Email</span></div></div></div></div>
+          </div>
+          <p>Wrap a component and delegate existing behavior while adding one responsibility.</p>
+        </section>
+
+        <section class="beat uml-b">
+          <div class="uml-tree">
+            <div class="uml iface abs c3"><h4><span class="st">«interface»</span>Notifier</h4><ul><li>+ send(msg)</li></ul></div>
+            <comic-rel kind="implement" dir="up" len="44"></comic-rel>
+            <div class="uml-kids">
+              <div class="uml-kid"><div class="uml c5"><h4>EmailNotifier</h4><ul><li>+ send(msg)</li></ul></div></div>
+              <div class="uml-kid"><div class="uml c1"><h4>LoggingNotifier</h4><ul><li>- inner: Notifier</li></ul><ul><li>+ send(msg)</li></ul></div></div>
+            </div>
+          </div>
+          <p class="aside">LoggingNotifier wraps another Notifier: same interface in, same interface out</p>
+        </section>
+
+        <section class="beat code">
+<pre class="code"><code>struct Notifier {
+  virtual void send(std::string_view msg) = 0;
+  virtual ~Notifier() = default;
+};
+struct EmailNotifier : Notifier {
+  void send(std::string_view msg) override { /* send email */ }
+};
+class LoggingNotifier : public Notifier {
+  std::unique_ptr&lt;Notifier&gt; inner;
+public:
+  explicit LoggingNotifier(std::unique_ptr&lt;Notifier&gt; n) : inner(std::move(n)) {}
+  void send(std::string_view msg) override {
+    std::cout &lt;&lt; "send: " &lt;&lt; msg &lt;&lt; '\n';
+    inner-&gt;send(msg);
+  }
+};</code></pre>
+        </section>
+
+        <section class="beat cost">
+          <ul class="checks">
+            <li class="y">Mix optional features at runtime without a subclass explosion.</li>
+            <li class="n">Debugging nested wrappers may take extra effort.</li>
+            <li class="n">Many small objects to create and keep track of.</li>
+          </ul>
+        </section>
+      </div>
+      <p class="note ask">How does Decorator differ from Adapter and Proxy?</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+    <!-- FACTORY METHOD -->
+    <article class="panel wide" data-id="factory-method" style="--tilt:.2deg">
+      <header class="ph"><span class="num">◈</span><span class="tag">CREATIONAL</span><h2>Factory Method</h2></header>
+      <p class="intent">Let a <b>subclass decide</b> which concrete product gets created.</p>
+      <div class="pat-grid">
+
+        <section class="beat problem">
+          <div class="scene">
+            <div class="who"><p class="bubble thought">if (os == WIN) new WinButton() else new MacButton()… in every function.</p><comic-char name="client" mood="sad" size="s" label="client"></comic-char></div>
+          </div>
+          <p>Client code is welded to concrete classes, so each new product means editing every creation site.</p>
+        </section>
+
+        <section class="beat fix">
+          <div class="scene tight">
+            <div class="who"><p class="bubble">Button, please.</p><comic-char name="client" size="s" label="render()"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble thought">My subclass decides.</p><comic-char name="factory" size="s" label="make()"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble r">Win32!</p><comic-char name="product" size="s" flip label="Button"></comic-char></div>
+          </div>
+          <p>Declare a creation method in the base class; subclasses override it to return the right product.</p>
+        </section>
+
+        <section class="beat uml-b span">
+          <div class="uml-row top">
+            <div class="uml-tree">
+              <div class="uml abs c2"><h4>Dialog</h4><ul><li>+ render()</li><li>+ make(): Button {abstract}</li></ul></div>
+              <comic-rel kind="inherit" dir="up" len="44"></comic-rel>
+              <div class="uml-kids">
+                <div class="uml-kid"><div class="uml c2"><h4>WinDialog</h4><ul><li>+ make()</li></ul></div></div>
+                <div class="uml-kid"><div class="uml c2"><h4>MacDialog</h4><ul><li>+ make()</li></ul></div></div>
+              </div>
+            </div>
+            <comic-rel kind="depend" dir="right" len="64" label="creates"></comic-rel>
+            <div class="uml-tree">
+              <div class="uml iface abs c3"><h4><span class="st">«interface»</span>Button</h4><ul><li>+ draw()</li></ul></div>
+              <comic-rel kind="implement" dir="up" len="44"></comic-rel>
+              <div class="uml-kids">
+                <div class="uml-kid"><div class="uml c5"><h4>WinButton</h4></div></div>
+                <div class="uml-kid"><div class="uml c5"><h4>MacButton</h4></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="beat code span">
+<pre class="code"><code>struct Button {
+  virtual void draw() const = 0;
+  virtual ~Button() = default;
+};
+struct WinButton : Button { void draw() const override { /* ... */ } };
+struct MacButton : Button { void draw() const override { /* ... */ } };
+
+struct Dialog {
+  virtual std::unique_ptr&lt;Button&gt; make() const = 0;  // factory method
+  void render() const { make()-&gt;draw(); }
+  virtual ~Dialog() = default;
+};
+struct WinDialog : Dialog {
+  std::unique_ptr&lt;Button&gt; make() const override { return std::make_unique&lt;WinButton&gt;(); }
+};</code></pre>
+        </section>
+
+        <section class="beat cost span">
+          <ul class="checks">
+            <li class="y">Client code depends on the interface, not on concrete classes.</li>
+            <li class="y">Add a new product without touching existing client code.</li>
+            <li class="n">One extra subclass per product variant.</li>
+            <li class="n">Often a plain function or a map of creators is enough.</li>
+          </ul>
+        </section>
+      </div>
+      <p class="note ask">Factory Method vs Abstract Factory vs Simple Factory?</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+  </section>
+</main>
+</body>
+</html>

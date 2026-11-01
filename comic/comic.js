@@ -22,6 +22,8 @@
   };
   // face y-offset per character (eyes baseline)
   const FY = { main: 48, worker: 54, sched: 50, mutex: 62, cpu: 48, os: 50 };
+  // extension hook: other kits (e.g. patterns.js) register more characters here
+  window.ComicKit = { BODY, FY };
 
   const dot = x => `<circle cx="${x}" cy="48" r="4" fill="${F}" stroke="none"/>`;
   const EYES = {
