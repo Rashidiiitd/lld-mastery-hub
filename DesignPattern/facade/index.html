@@ -1,24 +1,72 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Facade design pattern explained with intuition, UML, C++ example, use cases and trade-offs."><title>Facade Pattern — LLD Mastery Hub</title><link rel="stylesheet" href="../../styles.css?v=12"><script src="../../theme.js?v=1" defer></script>
-<style>
-.pat-wrap{max-width:980px;margin:auto;padding:2rem 1.25rem 4rem}.crumb{color:var(--muted,#777);margin-bottom:1.2rem}.pat-hero{padding:2rem 0}.tag{font-size:.78rem;letter-spacing:.08em;color:var(--accent,#6478e8);font-weight:700}.lead{font-size:1.15rem;max-width:760px}.pat-section{margin:2rem 0}.panel{border:1px solid var(--border,#ddd);border-radius:16px;padding:1.25rem;margin:1rem 0;background:var(--card,rgba(127,127,127,.04))}.panel h2{margin-top:0}.flow{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}.step{border:1px solid var(--border,#ddd);border-radius:10px;padding:.75rem 1rem}.arrow{font-weight:800;color:var(--accent,#6478e8)}pre{overflow:auto;padding:1rem;border-radius:12px;background:#101827;color:#e8edf7;font-size:.9rem;line-height:1.5}.note{border-left:3px solid var(--accent,#6478e8);padding:.8rem 1rem;background:var(--card,rgba(127,127,127,.05));border-radius:8px}.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}.muted{color:var(--muted,#777)}.topbar{position:sticky;top:0;z-index:5}
-</style></head><body><header class="topbar"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><nav class="topnav"><a href="../index.html">Design Patterns</a><a href="../../lld.html">LLD Roadmap</a></nav><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme">☼</button></header>
-<main class="pat-wrap"><p class="crumb"><a href="../index.html">Design Patterns</a> / Structural / Facade</p>
-<section class="pat-hero"><span class="tag">STRUCTURAL PATTERN · 10</span><h1>Facade Pattern</h1><p class="lead">Provide a <strong>simple, unified interface</strong> that hides the complexity of a subsystem. The client asks for a high-level operation; the Facade coordinates the lower-level pieces.</p><div class="hero-actions"><a class="button secondary" href="../index.html">← All patterns</a></div></section>
-<section class="pat-section panel"><h2>1. Intuition — why do we need it?</h2><p>Imagine a game client trying to make a move. Without a Facade, it may need to know the correct sequence: validate the move, update the board, check for a win, check for a draw, and switch the player. Every caller must understand that workflow.</p><div class="flow"><div class="step">Client</div><span class="arrow">→</span><div class="step">Game Facade</div><span class="arrow">→</span><div class="step">Board</div><div class="step">Player</div><div class="step">Rules / state checks</div></div><p class="note"><strong>Key idea:</strong> Facade does not necessarily replace subsystem classes. It gives clients a simpler front door and coordinates their use.</p></section>
-<section class="pat-section"><h2>2. Problem vs solution</h2><div class="cols"><div class="panel"><h3>Without Facade</h3><ul><li>Client calls multiple subsystem objects directly.</li><li>Client must know call order and workflow details.</li><li>Changes in the workflow can affect many callers.</li></ul></div><div class="panel"><h3>With Facade</h3><ul><li>Client calls one high-level method, e.g. <code>makeMove()</code>.</li><li>Facade coordinates the subsystem internally.</li><li>Subsystem remains available for clients that need lower-level control.</li></ul></div></div></section>
-<section class="pat-section panel"><h2>3. UML (conceptual)</h2><pre>Client
-  |
-  | calls
-  v
-GameFacade
-  |-- Board
-  |-- Player
-  |-- Rules / state checks
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101827"><meta name="description" content="Facade design pattern as comic notes: intuition, UML, C++ example, use cases and trade-offs."><title>Facade Pattern — LLD Mastery Hub</title><link rel="stylesheet" href="../../styles.css?v=12"><link rel="stylesheet" href="../../comic/comic.css?v=3"><link rel="stylesheet" href="../../comic/patterns.css?v=3"><link rel="stylesheet" href="../../notes/concurrency/comic-notes.css?v=3"><script src="../../theme.js?v=1" defer></script><script src="../../comic/comic.js?v=2" defer></script><script src="../../comic/patterns.js?v=1" defer></script><script src="facade.js?v=1" defer></script></head>
+<body class="comic-notes-page"><a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><nav class="topnav" aria-label="Main navigation"><a href="../../lld.html">LLD</a><a href="../../cpp-interview.html">C++ Interviews</a><a href="../../system-design.html">System Design</a><a href="../../dsa.html">DSA</a><a href="../../resources.html">Resources</a></nav><a class="button secondary auth-nav-link" href="../../login.html">Sign in</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme">☼</button></header>
+<main id="main" class="comic-main">
+<p class="muted small" style="margin:20px 0 0"><a href="../index.html">Design Patterns</a> / Structural / Facade</p>
+<section class="comic-hero"><div><p class="eyebrow">STRUCTURAL PATTERN · 10</p><h1>Facade<br><span class="gradient-text">Pattern</span></h1><p class="comic-lede">Provide a <strong>simple, unified interface</strong> that hides the complexity of a subsystem. The client asks for a high-level operation; the Facade coordinates the lower-level pieces.</p><div class="comic-meta"><span>8 comic panels</span><span>·</span><span>Structural</span><span>·</span><span>C++ example</span></div><div class="comic-actions"><a class="button secondary" href="../index.html">← All patterns</a><button class="button primary" id="mark-chapter" type="button">Mark pattern complete ✓</button></div></div><aside class="chapter-progress"><div class="progress-head"><strong>Your progress</strong><span id="progress-label">0 / 8 panels</span></div><div class="progress-track"><span id="chapter-progress-bar"></span></div><p class="muted small">Mark a panel learned when you can explain it without looking.</p></aside></section>
 
-Client depends on the Facade.
-Facade coordinates subsystem components.</pre><p class="muted">Facade usually has associations/dependencies to subsystem classes; it does not need to inherit from them.</p></section>
-<section class="pat-section panel"><h2>4. C++ example — Tic-Tac-Toe move</h2><pre><code>class Game { // Facade / coordinator
+<div class="comic" data-theme="site">
+
+<section class="comic-intro"><div class="scene">
+<div class="who"><p class="bubble"><strong>Our story:</strong> A game client wants to make a move. Why should it need to know the whole workflow behind that one move?</p><comic-char name="client" mood="think" size="s" label="client"></comic-char></div>
+<div class="pair"><comic-char name="wrapper" size="s" label="facade"></comic-char><comic-char name="worker" size="s" flip label="subsystem"></comic-char></div>
+</div></section>
+
+<div class="strip">
+
+<!-- 01 -->
+<article class="panel" data-panel="1" style="--tilt:-.3deg">
+<header class="ph"><span class="num">01</span><span class="tag">INTUITION</span><h2>Why do we need it?</h2></header>
+<div class="scene"><div class="who"><p class="bubble thought">First validate, then update the board, check win, check draw, switch player…</p><comic-char name="client" mood="sad" size="s" label="caller"></comic-char></div></div>
+<p>Without a Facade, every caller must understand the correct sequence of the workflow.</p>
+<div class="scene">
+<div class="who"><p class="bubble">Make a move!</p><comic-char name="client" size="s" label="client"></comic-char></div>
+<span class="arrow">→</span>
+<div class="who"><p class="bubble">I coordinate it.</p><comic-char name="wrapper" size="s" label="game facade"></comic-char></div>
+<span class="arrow">→</span>
+<div class="who"><p class="bubble r">Board, player, state.</p><comic-char name="worker" size="s" flip label="subsystem"></comic-char></div>
+</div>
+<p class="note">Facade does not necessarily replace subsystem classes. It gives clients a simpler front door and coordinates their use.</p>
+<button class="panel-done" data-complete="1" type="button">Mark panel learned</button>
+</article>
+
+<!-- 02 -->
+<article class="panel" data-panel="2" style="--tilt:.3deg">
+<header class="ph"><span class="num">02</span><span class="tag">PROBLEM VS SOLUTION</span><h2>One front door</h2></header>
+<div class="versus">
+<div class="before"><h5>WITHOUT FACADE</h5>
+<div class="flow"><span class="chip">validate</span><span class="arrow sm">→</span><span class="chip">place mark</span><span class="arrow sm">→</span><span class="chip">check win</span><span class="arrow sm">→</span><span class="chip">check draw</span><span class="arrow sm">→</span><span class="chip">switch player</span></div>
+<ul class="checks"><li class="n">Client calls multiple subsystem objects directly.</li><li class="n">Client must know call order and workflow details.</li><li class="n">Changes in the workflow can affect many callers.</li></ul></div>
+<div class="after"><h5>WITH FACADE</h5>
+<div class="flow"><span class="chip on">makeMove(r, c)</span></div>
+<ul class="checks"><li class="y">Client calls one high-level method, e.g. <code>makeMove()</code>.</li><li class="y">Facade coordinates the subsystem internally.</li><li class="y">Subsystem remains available for clients that need lower-level control.</li></ul></div>
+</div>
+<button class="panel-done" data-complete="2" type="button">Mark panel learned</button>
+</article>
+
+<!-- 03 -->
+<article class="panel" data-panel="3" style="--tilt:-.2deg">
+<header class="ph"><span class="num">03</span><span class="tag">STRUCTURE</span><h2>UML (conceptual)</h2></header>
+<div class="uml-tree">
+<div class="uml c2"><h4>Client</h4></div>
+<comic-rel kind="depend" dir="down" len="40" label="calls"></comic-rel>
+<div class="uml c1"><h4><span class="st">«Facade»</span>Game</h4><ul><li>- board: Board</li><li>- x, o: Player</li><li>- state: GameState</li></ul><ul><li>+ makeMove(r, c): bool</li></ul></div>
+<comic-rel kind="assoc" dir="down" len="40" label="coordinates"></comic-rel>
+<div class="uml-kids">
+<div class="uml-kid"><div class="uml c5"><h4>Board</h4><ul><li>placeMark()</li><li>checkWin()</li><li>isFull()</li></ul></div></div>
+<div class="uml-kid"><div class="uml c5"><h4>Player</h4><ul><li>getMark()</li></ul></div></div>
+</div>
+</div>
+<p class="aside">the client depends on the Facade; the Facade coordinates the subsystem</p>
+<details class="more"><summary>Details</summary><p>Facade usually has associations/dependencies to subsystem classes; it does not need to inherit from them.</p></details>
+<button class="panel-done" data-complete="3" type="button">Mark panel learned</button>
+</article>
+
+<!-- 04 -->
+<article class="panel" data-panel="4" style="--tilt:.3deg">
+<header class="ph"><span class="num">04</span><span class="tag">C++ EXAMPLE</span><h2>Tic-Tac-Toe move</h2></header>
+<pre class="code"><code>class Game { // Facade / coordinator
     Board board;
     Player x{"X"}, o{"O"};
     Player* current = &amp;x;
@@ -44,9 +92,80 @@ public:
 };
 
 // Client usage:
-game.makeMove(row, col);</code></pre><p class="muted">Board, Player and GameState are supporting types; this snippet focuses on the Facade’s role and workflow.</p></section>
-<section class="pat-section panel"><h2>5. Where is it useful?</h2><ul><li><strong>Subsystem APIs:</strong> one entry point to coordinate several library components.</li><li><strong>Application services:</strong> a high-level operation that orchestrates repositories, validators, and other services.</li><li><strong>Complex initialization:</strong> hide the required setup sequence behind a simple method.</li><li><strong>Legacy integration:</strong> provide a cleaner interface over a complicated or awkward subsystem.</li></ul></section>
-<section class="pat-section panel"><h2>6. Trade-offs</h2><div class="cols"><div><h3>Benefits</h3><ul><li>Simplifies client usage.</li><li>Reduces coupling to subsystem details.</li><li>Centralizes a common workflow.</li></ul></div><div><h3>Watch out</h3><ul><li>Facade can become a “god class” if it accumulates unrelated logic.</li><li>It should coordinate, not absorb every subsystem responsibility.</li><li>Not every coordinator needs to be labeled a Facade in an interview.</li></ul></div></div></section>
-<section class="pat-section panel"><h2>7. Facade vs Adapter</h2><p><strong>Facade</strong> simplifies access to a subsystem by offering a convenient interface.</p><p><strong>Adapter</strong> translates one interface into another so incompatible interfaces can work together.</p></section>
-<section class="pat-section panel"><h2>8. Interview checklist</h2><ol><li>Explain why the client currently knows too much about subsystem details.</li><li>Identify the high-level operation clients actually need.</li><li>Show how the Facade delegates and coordinates.</li><li>Clarify that subsystem classes still own their own responsibilities.</li><li>Mention the risk of turning the Facade into a god object.</li></ol><p class="note"><strong>One-line definition:</strong> Facade provides a unified, higher-level interface to make a complex subsystem easier to use.</p></section>
-<footer class="footer"><a href="../index.html">← Back to Design Patterns</a></footer></main></body></html>
+game.makeMove(row, col);</code><button class="copy-code" type="button">Copy code</button></pre>
+<details class="more"><summary>Supporting types (declarations only)</summary>
+<pre class="code"><code>enum class GameState { IN_PROGRESS, WON, DRAW };
+
+struct Player {
+    explicit Player(std::string mark);
+    const std::string&amp; getMark() const;
+};
+
+class Board {
+public:
+    bool placeMark(int r, int c, const std::string&amp; mark);
+    bool checkWin(int r, int c) const;
+    bool isFull() const;
+};</code></pre>
+<p>Board, Player and GameState are supporting types; the snippet above focuses on the Facade's role and workflow.</p></details>
+<button class="panel-done" data-complete="4" type="button">Mark panel learned</button>
+</article>
+
+<!-- 05 -->
+<article class="panel" data-panel="5" style="--tilt:-.3deg">
+<header class="ph"><span class="num">05</span><span class="tag">USE CASES</span><h2>Where is it useful?</h2></header>
+<div class="frames two">
+<div class="frame"><b>Subsystem APIs</b><p>One entry point to coordinate several library components.</p></div>
+<div class="frame"><b>Application services</b><p>A high-level operation that orchestrates repositories, validators, and other services.</p></div>
+<div class="frame"><b>Complex initialization</b><p>Hide the required setup sequence behind a simple method.</p></div>
+<div class="frame"><b>Legacy integration</b><p>Provide a cleaner interface over a complicated or awkward subsystem.</p></div>
+</div>
+<button class="panel-done" data-complete="5" type="button">Mark panel learned</button>
+</article>
+
+<!-- 06 -->
+<article class="panel" data-panel="6" style="--tilt:.2deg">
+<header class="ph"><span class="num">06</span><span class="tag">TRADE-OFFS</span><h2>Benefits and watch-outs</h2></header>
+<div class="scene"><div class="who"><p class="bubble shout r">Coordinate, don't absorb!</p><comic-char name="wrapper" mood="shock" size="s" flip label="game facade"></comic-char></div></div>
+<ul class="checks">
+<li class="y">Simplifies client usage.</li>
+<li class="y">Reduces coupling to subsystem details.</li>
+<li class="y">Centralizes a common workflow.</li>
+<li class="n">Facade can become a “god class” if it accumulates unrelated logic.</li>
+<li class="n">It should coordinate, not absorb every subsystem responsibility.</li>
+<li class="n">Not every coordinator needs to be labeled a Facade in an interview.</li>
+</ul>
+<button class="panel-done" data-complete="6" type="button">Mark panel learned</button>
+</article>
+
+<!-- 07 -->
+<article class="panel" data-panel="7" style="--tilt:-.2deg">
+<header class="ph"><span class="num">07</span><span class="tag">COMPARE</span><h2>Facade vs Adapter</h2></header>
+<div class="scene">
+<div class="who"><p class="bubble">I simplify access to a subsystem.</p><comic-char name="wrapper" size="s" label="facade"></comic-char></div>
+<div class="who"><p class="bubble r">I translate one interface into another.</p><comic-char name="adapter" size="s" flip label="adapter"></comic-char></div>
+</div>
+<p class="note"><strong>Facade</strong> offers a convenient interface to a subsystem. <strong>Adapter</strong> translates one interface into another so incompatible interfaces can work together.</p>
+<button class="panel-done" data-complete="7" type="button">Mark panel learned</button>
+</article>
+
+<!-- 08 -->
+<article class="panel" data-panel="8" style="--tilt:.3deg">
+<header class="ph"><span class="num">08</span><span class="tag">INTERVIEW</span><h2>Checklist</h2></header>
+<ul class="checks">
+<li class="y">Explain why the client currently knows too much about subsystem details.</li>
+<li class="y">Identify the high-level operation clients actually need.</li>
+<li class="y">Show how the Facade delegates and coordinates.</li>
+<li class="y">Clarify that subsystem classes still own their own responsibilities.</li>
+<li class="y">Mention the risk of turning the Facade into a god object.</li>
+</ul>
+<p class="note"><strong>One-line definition:</strong> Facade provides a unified, higher-level interface to make a complex subsystem easier to use.</p>
+<button class="panel-done" data-complete="8" type="button">Mark panel learned</button>
+</article>
+
+</div>
+</div>
+
+<section class="chapter-recap"><div><p class="eyebrow">CHECKPOINT</p><h2>Can you explain Facade without notes?</h2><p class="muted">Try answering aloud before revealing the short answer.</p></div><div class="recap-questions"><details><summary>Why use a Facade?</summary><p>Clients shouldn't need to know the subsystem's call order. The Facade exposes one high-level operation and coordinates the pieces behind it.</p></details><details><summary>Does a Facade replace the subsystem classes?</summary><p>No. It is a simpler front door; the subsystem remains available for clients that need lower-level control.</p></details><details><summary>Facade vs Adapter?</summary><p>Facade simplifies access to a subsystem. Adapter translates one interface into another so incompatible interfaces can work together.</p></details><details><summary>What is the main risk?</summary><p>It can become a god class if it accumulates unrelated logic. It should coordinate, not absorb the subsystem's responsibilities.</p></details><details><summary>Must the Facade inherit from the subsystem classes?</summary><p>No. It usually holds associations or dependencies to them and delegates the work.</p></details></div><div class="chapter-footer-actions"><a class="button secondary" href="../index.html">All patterns</a><button class="button primary" id="mark-chapter-bottom" type="button">Mark all panels learned ✓</button></div></section>
+<footer class="footer"><a class="brand" href="../../index.html"><span class="brand-mark">L</span><span>LLD <b>Mastery Hub</b></span></a><p>Learn the idea. Draw the flow. Implement it in C++.</p><a href="https://github.com/Rashidiiitd/lld-mastery-hub" target="_blank" rel="noreferrer">View source ↗</a></footer>
+</main></body></html>

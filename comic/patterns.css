@@ -85,17 +85,17 @@
 
 /* ---------- trade-off checklist ---------- */
 .checks { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .35rem; }
-.checks li { display: flex; align-items: flex-start; gap: .5rem; font-size: 1.05rem; line-height: 1.3; }
+.checks li { position: relative; padding-left: 1.8rem; font-size: 1.05rem; line-height: 1.3; }
 .checks li::before {
-  flex: none;
+  position: absolute; left: 0; top: .05rem;
   display: grid; place-items: center;
   width: 1.3rem; height: 1.3rem;
-  margin-top: .05rem;
   border: 2px solid var(--ink);
   border-radius: 50%;
   color: #1f2430;
   font: 700 .8rem/1 var(--mono);
 }
+.checks code { font: .85rem var(--mono); }
 .checks .y::before { content: "✓"; background: var(--good); }
 .checks .n::before { content: "✕"; background: var(--bad); }
 
@@ -150,6 +150,9 @@ comic-rel svg { display: block; overflow: visible; }
 comic-rel .lbl { margin-top: .2rem; font: 600 .72rem var(--mono); color: var(--mute); }
 comic-rel[dir="up"], comic-rel[dir="down"] { flex-direction: row; gap: .5rem; }
 comic-rel[dir="up"] .lbl, comic-rel[dir="down"] .lbl { margin: 0; }
+
+.frame p { margin: 0; font-size: 1rem; line-height: 1.25; }
+.frames.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 /* ---------- arrow legend ---------- */
 .key-title { margin: 1.4rem 0 .4rem; }
