@@ -53,6 +53,7 @@
         </ul></div>
         <div class="pgroup str"><h3>Structural · how objects fit together</h3><ul>
           <li><span class="chip">Decorator</span>add behavior by wrapping an object behind the same interface</li>
+          <li><span class="chip">Facade</span>provide one simple interface to a complex subsystem</li>
         </ul></div>
         <div class="pgroup beh"><h3>Behavioral · how objects cooperate</h3><ul>
           <li><span class="chip">Strategy</span>make an algorithm interchangeable behind a stable interface</li>
@@ -337,6 +338,72 @@ struct WinDialog : Dialog {
         </section>
       </div>
       <p class="note ask">Factory Method vs Abstract Factory vs Simple Factory?</p>
+      <button class="learn">Mark panel learned</button>
+    </article>
+
+
+    <!-- FACADE -->
+    <article class="panel wide" data-id="facade" style="--tilt:.2deg">
+      <header class="ph"><span class="num">▣</span><span class="tag">STRUCTURAL</span><h2>Facade</h2></header>
+      <p class="intent">Provide a <b>simple, unified interface</b> that hides the complexity of a subsystem.</p>
+      <div class="pat-grid">
+        <section class="beat problem">
+          <div class="scene">
+            <div class="who"><p class="bubble thought">First validate, then update board, check win, check draw, switch player…</p><comic-char name="client" mood="sad" size="s" label="Caller"></comic-char></div>
+          </div>
+          <p>The client must know too many subsystem details and the correct order of operations.</p>
+        </section>
+        <section class="beat fix">
+          <div class="scene tight">
+            <div class="who"><p class="bubble">Make a move!</p><comic-char name="client" size="s" label="Client"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble">I coordinate it.</p><comic-char name="wrapper" size="s" label="Game facade"></comic-char></div>
+            <span class="arrow">→</span>
+            <div class="who"><p class="bubble r">Board + players</p><comic-char name="worker" size="s" flip label="Subsystem"></comic-char></div>
+          </div>
+          <p>The client calls one high-level operation; the facade coordinates subsystem components internally.</p>
+        </section>
+        <section class="beat uml-b">
+          <div class="uml-tree">
+            <div class="uml c2"><h4>Client</h4><ul><li>+ makeMove()</li></ul></div>
+            <comic-rel kind="depend" dir="down" len="40" label="calls"></comic-rel>
+            <div class="uml c1"><h4>Game «Facade»</h4><ul><li>- board: Board</li><li>- players: Player</li><li>+ makeMove()</li></ul></div>
+            <comic-rel kind="assoc" dir="down" len="40" label="coordinates"></comic-rel>
+            <div class="uml-kids">
+              <div class="uml-kid"><div class="uml c5"><h4>Board</h4><ul><li>placeMark()</li><li>checkWin()</li><li>isFull()</li></ul></div></div>
+              <div class="uml-kid"><div class="uml c5"><h4>Player</h4><ul><li>getMark()</li></ul></div></div>
+            </div>
+          </div>
+        </section>
+        <section class="beat code">
+<pre class="code"><code>class Game { // Facade / coordinator
+  Board board;
+  Player x{"X"}, o{"O"};
+  Player* current = &amp;x;
+  GameState state = GameState::IN_PROGRESS;
+public:
+  bool makeMove(int r, int c) {
+    if (state != GameState::IN_PROGRESS) return false;
+    if (!board.placeMark(r, c, current-&gt;getMark()))
+      return false;
+
+    if (board.checkWin(r, c)) state = GameState::WON;
+    else if (board.isFull()) state = GameState::DRAW;
+    else current = (current == &amp;x) ? &amp;o : &amp;x;
+    return true;
+  }
+};</code></pre>
+        </section>
+        <section class="beat cost">
+          <ul class="checks">
+            <li class="y">Simplifies usage and reduces client–subsystem coupling.</li>
+            <li class="y">Centralizes workflow coordination in one clear entry point.</li>
+            <li class="n">Can become a “god class” if too much logic accumulates.</li>
+            <li class="n">Not every coordinator needs to be called a Facade in an interview.</li>
+          </ul>
+        </section>
+      </div>
+      <p class="note ask">Facade vs Adapter: Facade simplifies access; Adapter makes incompatible interfaces work together.</p>
       <button class="learn">Mark panel learned</button>
     </article>
 
